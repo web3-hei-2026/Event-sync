@@ -1,0 +1,443 @@
+openapi: 3.0.3
+info:
+  title: EventSync API
+  description: REST API for the EventSync platform
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:3000/api
+    description: Local development server
+
+tags:
+  - name: Events
+  - name: Sessions
+  - name: Rooms
+  - name: Speakers
+  - name: Questions
+
+paths:
+  /events:
+    get:
+      tags: [Events]
+      summary: Get all events
+      responses:
+        "200":
+          description: List of events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EventSummary"
+
+  /events/{id}:
+    get:
+      tags: [Events]
+      summary: Get event details
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Event detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventDetail"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /events/{id}/sessions:
+    get:
+      tags: [Events]
+      summary: Get all sessions of an event
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: List of sessions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SessionSummary"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /events/{id}/schedule:
+    get:
+      tags: [Events]
+      summary: Get the multi-track schedule of an event (grouped by room and time)
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Schedule grouped by room
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RoomSchedule"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  
+  /sessions/{id}:
+    get:
+      tags: [Sessions]
+      summary: Get session details
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Session detail with speakers and live status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionDetail"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  
+  /rooms:
+    get:
+      tags: [Rooms]
+      summary: Get all rooms
+      responses:
+        "200":
+          description: List of rooms
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Room"
+
+  /rooms/{id}/sessions:
+    get:
+      tags: [Rooms]
+      summary: Get sessions of a room (chronological order)
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Sessions in this room
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SessionSummary"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+
+  /speakers:
+    get:
+      tags: [Speakers]
+      summary: Get all speakers
+      responses:
+        "200":
+          description: List of speakers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SpeakerSummary"
+
+  /speakers/{id}:
+    get:
+      tags: [Speakers]
+      summary: Get speaker public profile
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Speaker profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SpeakerDetail"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /speakers/{id}/sessions:
+    get:
+      tags: [Speakers]
+      summary: Get sessions associated with a speaker
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Sessions of this speaker
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SessionSummary"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+
+  /sessions/{id}/questions:
+    get:
+      tags: [Questions]
+      summary: Get questions of a session (sorted by upvotes)
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: List of questions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Question"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    post:
+      tags: [Questions]
+      summary: Submit a question to a live session
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuestionCreate"
+      responses:
+        "201":
+          description: Question created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Question"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          description: Session is not live
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                message: "Questions can only be submitted during a live session"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /questions/{id}/upvote:
+    post:
+      tags: [Questions]
+      summary: Upvote a question
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Updated question with new upvote count
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Question"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+
+components:
+
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  responses:
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            message: "Resource not found"
+    BadRequest:
+      description: Invalid request body
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            message: "content is required"
+
+  schemas:
+
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+
+
+    EventSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        location:
+          type: string
+          nullable: true
+
+    EventDetail:
+      allOf:
+        - $ref: "#/components/schemas/EventSummary"
+        - type: object
+          properties:
+            sessions:
+              type: array
+              items:
+                $ref: "#/components/schemas/SessionSummary"
+
+
+    SessionSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        isLive:
+          type: boolean
+        room:
+          $ref: "#/components/schemas/Room"
+        speakers:
+          type: array
+          items:
+            $ref: "#/components/schemas/SpeakerSummary"
+
+    SessionDetail:
+      allOf:
+        - $ref: "#/components/schemas/SessionSummary"
+        - type: object
+          properties:
+            description:
+              type: string
+              nullable: true
+            capacity:
+              type: integer
+              nullable: true
+            questions:
+              type: array
+              items:
+                $ref: "#/components/schemas/Question"
+
+
+    Room:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+
+    RoomSchedule:
+      type: object
+      properties:
+        room:
+          $ref: "#/components/schemas/Room"
+        sessions:
+          type: array
+          items:
+            $ref: "#/components/schemas/SessionSummary"
+
+
+    SpeakerSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        fullName:
+          type: string
+        photoUrl:
+          type: string
+          nullable: true
+
+    SpeakerDetail:
+      allOf:
+        - $ref: "#/components/schemas/SpeakerSummary"
+        - type: object
+          properties:
+            biography:
+              type: string
+              nullable: true
+            externalLinks:
+              type: object
+              nullable: true
+              example:
+                twitter: "https://twitter.com/handle"
+                linkedin: "https://linkedin.com/in/handle"
+                website: "https://example.com"
+            sessions:
+              type: array
+              items:
+                $ref: "#/components/schemas/SessionSummary"
+
+    
+    Question:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        content:
+          type: string
+        authorName:
+          type: string
+          nullable: true
+        upvotes:
+          type: integer
+        sessionId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+
+    QuestionCreate:
+      type: object
+      required:
+        - content
+      properties:
+        content:
+          type: string
+        authorName:
+          type: string
+          nullable: true

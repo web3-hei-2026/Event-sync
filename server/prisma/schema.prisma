@@ -1,0 +1,103 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Event {
+  id          String    @id @default(uuid())
+  title       String
+  description String?
+  startDate   DateTime
+  endDate     DateTime
+  location    String?
+  sessions    Session[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("events")
+}
+
+model Room {
+  id       String    @id @default(uuid())
+  name     String
+  sessions Session[]
+
+  @@map("rooms")
+}
+
+model Session {
+  id          String          @id @default(uuid())
+  title       String
+  description String?
+  startTime   DateTime
+  endTime     DateTime
+  capacity    Int?
+  event       Event           @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId     String
+  room        Room            @relation(fields: [roomId], references: [id])
+  roomId      String
+  speakers    SessionSpeaker[]
+  questions   Question[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@map("sessions")
+}
+
+model Speaker {
+  id           String          @id @default(uuid())
+  fullName     String
+  photoUrl     String?
+  biography    String?
+  externalLinks Json?
+  sessions     SessionSpeaker[]
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  @@map("speakers")
+}
+
+model SessionSpeaker {
+  session   Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId String
+  speaker   Speaker @relation(fields: [speakerId], references: [id], onDelete: Cascade)
+  speakerId String
+
+  @@id([sessionId, speakerId])
+  @@map("session_speakers")
+}
+
+model Question {
+  id         String   @id @default(uuid())
+  content    String
+  authorName String?
+  upvotes    Int      @default(0)
+  session    Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId  String
+  createdAt  DateTime @default(now())
+
+  @@map("questions")
+}
+
+
+
