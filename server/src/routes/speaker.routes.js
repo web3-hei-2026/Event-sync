@@ -1,19 +1,3 @@
-// const express = require("express");
-// const router = express.Router();
-
-// const speakerController = require("../controllers/speaker.controller");
-// const upload = require("../lib/upload");
-
-// // routes
-// router.get("/", speakerController.getAllSpeakers);
-// router.get("/:id", speakerController.getSpeakerById);
-// router.get("/:id/sessions", speakerController.getSpeakerSessions);
-
-// // create speaker avec image
-// router.post("/", upload.single("photo"), speakerController.createSpeaker);
-
-// module.exports = router;
-
 const express = require("express");
 const router = express.Router();
 
@@ -31,7 +15,6 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// IMPORTANT: "photo" doit matcher Postman
 router.post("/", upload.single("photo"), createSpeaker);
 
 router.get("/", getAllSpeakers);

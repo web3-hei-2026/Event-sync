@@ -7,21 +7,9 @@ exports.getAllSpeakers = async () => {
 };
 exports.getSpeakerById = async (id) => {
   return await prisma.speaker.findUnique({
-    where: { id: Number(id) } // IMPORTANT
+    where: { id: Number(id) } 
   });
 };
-// exports.getSpeakerById = async (id) => {
-//   return await prisma.speaker.findUnique({
-//     where: { id },
-//     include: {
-//       sessions: {
-//         include: {
-//           session: true
-//         }
-//       }
-//     }
-//   });
-// };
 
 exports.getSpeakerSessions = async (id) => {
   const data = await prisma.sessionSpeaker.findMany({
