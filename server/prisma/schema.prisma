@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-
-=======
->>>>>>> events-rooms-ny
 generator client {
   provider = "prisma-client-js"
 }
