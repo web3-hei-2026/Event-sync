@@ -1,10 +1,6 @@
-const { Router } = require('express');
 const prisma = require('../lib/prisma');
 
-const router = Router();
-
-// GET /api/events
-router.get('/', async (req, res) => {
+const getEvents = async (req, res) => {
   try {
     const events = await prisma.event.findMany({
       orderBy: { startDate: 'asc' },
@@ -22,10 +18,9 @@ router.get('/', async (req, res) => {
     console.error(error);
     res.status(500).json({ message: 'Internal server error' });
   }
-});
+};
 
-// GET /api/events/:id
-router.get('/:id', async (req, res) => {
+const getEventById = async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -81,6 +76,9 @@ router.get('/:id', async (req, res) => {
     console.error(error);
     res.status(500).json({ message: 'Internal server error' });
   }
-});
+};
 
-module.exports = router;
+module.exports = {
+  getEvents,
+  getEventById,
+};

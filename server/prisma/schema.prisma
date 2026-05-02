@@ -78,7 +78,19 @@ model Question {
   upvotes    Int      @default(0)
   session    Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   sessionId  String
+  upvotesList Upvote[]
   createdAt  DateTime @default(now())
 
   @@map("questions")
+}
+
+model Upvote {
+  id         String   @id @default(uuid())
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  questionId String
+  userId     String
+  createdAt  DateTime @default(now())
+
+  @@unique([questionId, userId])
+  @@map("upvotes")
 }
