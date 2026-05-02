@@ -12,12 +12,13 @@ const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
-
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use("/speakers", require("./src/routes/speaker.routes"));
 
 app.get('/', (req, res) => {
   res.json({ message: 'Backend running' });
 });
-
 
 app.use('/api/events', eventsRouter);
 app.use('/api/rooms', roomsRouter);
