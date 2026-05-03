@@ -12,6 +12,7 @@ exports.getAllSpeakers = async (req, res) => {
 
 exports.getSpeakerById = async (req, res) => {
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
   // try {
   //   const speaker = await speakerService.getSpeakerById(req.params.id);
@@ -26,6 +27,8 @@ exports.getSpeakerById = async (req, res) => {
   // }
 >>>>>>> c71733c6665d0f76f89771f49b27e3c1e2b4a4f0
 
+=======
+>>>>>>> 3fe38b2a7598c26eaeeaeffea64bc4198fc69807
   try {
     const { id } = req.params;
 

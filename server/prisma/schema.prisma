@@ -1,10 +1,10 @@
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Event {
@@ -30,33 +30,33 @@ model Room {
 }
 
 model Session {
-  id          String          @id @default(uuid())
+  id          String           @id @default(uuid())
   title       String
   description String?
   startTime   DateTime
   endTime     DateTime
   capacity    Int?
-  event       Event           @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  event       Event            @relation(fields: [eventId], references: [id], onDelete: Cascade)
   eventId     String
-  room        Room            @relation(fields: [roomId], references: [id])
+  room        Room             @relation(fields: [roomId], references: [id])
   roomId      String
   speakers    SessionSpeaker[]
   questions   Question[]
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
 
   @@map("sessions")
 }
 
 model Speaker {
-  id           String          @id @default(uuid())
-  fullName     String
-  photoUrl     String?
-  biography    String?
+  id            String           @id @default(uuid())
+  fullName      String
+  photoUrl      String?
+  biography     String?
   externalLinks Json?
-  sessions     SessionSpeaker[]
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
+  sessions      SessionSpeaker[]
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
 
   @@map("speakers")
 }
@@ -82,6 +82,3 @@ model Question {
 
   @@map("questions")
 }
-
-
-
