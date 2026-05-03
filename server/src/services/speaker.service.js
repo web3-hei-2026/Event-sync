@@ -7,9 +7,27 @@ exports.getAllSpeakers = async () => {
 };
 exports.getSpeakerById = async (id) => {
   return await prisma.speaker.findUnique({
+<<<<<<< HEAD
     where: { id: Number(id) } 
   });
 };
+=======
+    where: { id: Number(id) } // IMPORTANT
+  });
+};
+// exports.getSpeakerById = async (id) => {
+//   return await prisma.speaker.findUnique({
+//     where: { id },
+//     include: {
+//       sessions: {
+//         include: {
+//           session: true
+//         }
+//       }
+//     }
+//   });
+// };
+>>>>>>> c71733c6665d0f76f89771f49b27e3c1e2b4a4f0
 
 exports.getSpeakerSessions = async (id) => {
   const data = await prisma.sessionSpeaker.findMany({

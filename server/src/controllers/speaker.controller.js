@@ -11,6 +11,20 @@ exports.getAllSpeakers = async (req, res) => {
 };
 
 exports.getSpeakerById = async (req, res) => {
+<<<<<<< HEAD
+=======
+  // try {
+  //   const speaker = await speakerService.getSpeakerById(req.params.id);
+
+  //   if (!speaker) {
+  //     return res.status(404).json({ message: "Speaker not found" });
+  //   }
+
+  //   res.json(speaker);
+  // } catch (error) {
+  //   res.status(500).json({ error: error.message });
+  // }
+>>>>>>> c71733c6665d0f76f89771f49b27e3c1e2b4a4f0
 
   try {
     const { id } = req.params;
