@@ -6,7 +6,7 @@ const eventsRouter = require('./routes/events');
 const roomsRouter = require('./routes/rooms');
 const sessionRoutes = require("./src/routes/sessionRoutes");
 const speakerRoutes = require("./src/routes/speaker.routes");
-const questionRoutes = require("./src/routes/question.routes");
+const questionRoutes = require("./src/routes/questions.routes");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
