@@ -1,12 +1,14 @@
-const express = require('express');
-const cors = require('cors');
-require('dotenv').config();
+const path = require("path");
+require("dotenv").config({ path: path.resolve(__dirname, ".env") });
 
-const eventsRouter = require('./routes/events');
-const roomsRouter = require('./routes/rooms');
-const sessionRoutes = require("./src/routes/sessionRoutes");
-const speakerRoutes = require("./src/routes/speaker.routes");
-const questionRoutes = require("./src/routes/questions.routes");
+const express = require("express");
+const cors = require("cors");
+
+const eventsRouter = require("./src/routes/events.route");
+const roomsRouter = require("./src/routes/rooms.route");
+const questionsRouter = require("./src/routes/questions.route");
+const sessionsRouter = require("./src/routes/session.route");
+const speakersRouter = require("./src/routes/speaker.route");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -15,16 +17,33 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use("/speakers", speakerRoutes);
-app.use("/api/events", eventsRouter);
-app.use("/api/rooms", roomsRouter);
-app.use("/api", sessionRoutes);
-app.use("/api/questions", questionRoutes);
+// Serve uploads folder
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-app.get('/', (req, res) => {
-  res.json({ message: 'EventSync API is fully integrated and running 🚀' });
+app.get("/", (req, res) => {
+  res.json({ message: "Backend running" });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port: ${PORT}`);
+// API Routes
+app.use("/api/events", eventsRouter);
+app.use("/api/rooms", roomsRouter);
+app.use("/api", questionsRouter);
+app.use("/api", sessionsRouter);
+app.use("/api/speakers", speakersRouter);
+
+const PORT = process.env.PORT || 5000;
+const server = app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
+server.on("error", (err) => {
+  console.error("Server error:", err);
+});
+
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught exception:", err);
+});
+
+process.on("unhandledRejection", (err) => {
+  console.error("Unhandled rejection:", err);
 });

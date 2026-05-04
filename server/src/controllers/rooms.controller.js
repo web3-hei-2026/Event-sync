@@ -1,10 +1,6 @@
-const { Router } = require('express');
 const prisma = require('../lib/prisma');
 
-const router = Router();
-
-// GET /api/rooms
-router.get('/', async (req, res) => {
+const getRooms = async (req, res) => {
   try {
     const rooms = await prisma.room.findMany({
       orderBy: { name: 'asc' },
@@ -15,10 +11,9 @@ router.get('/', async (req, res) => {
     console.error(error);
     res.status(500).json({ message: 'Internal server error' });
   }
-});
+};
 
-// GET /api/rooms/:id/sessions
-router.get('/:id/sessions', async (req, res) => {
+const getRoomSessions = async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -62,6 +57,9 @@ router.get('/:id/sessions', async (req, res) => {
     console.error(error);
     res.status(500).json({ message: 'Internal server error' });
   }
-});
+};
 
-module.exports = router;
+module.exports = {
+  getRooms,
+  getRoomSessions,
+};

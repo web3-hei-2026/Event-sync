@@ -1,12 +1,3 @@
-import "dotenv/config";
-import { defineConfig, env } from "prisma/config";
-
-export default defineConfig({
-  schema: "prisma/schema.prisma",
-  migrations: {
-    path: "prisma/migrations",
-  },
-  datasource: {
-    url: env("DATABASE_URL"),
-  },
-});
+// Note: Prisma CLI automatically detects schema location
+// This config file is not required for normal Prisma operations
+// Prisma configuration is handled by the schema.prisma file and .env file
