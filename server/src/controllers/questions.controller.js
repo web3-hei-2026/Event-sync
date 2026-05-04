@@ -81,7 +81,6 @@ const upvoteQuestion = async (req, res) => {
       return res.status(403).json({ error: 'Impossible de voter : la session n\'est pas en cours' });
     }
 
-    // Vérifier si l'utilisateur a déjà voté
     const existingUpvote = await prisma.upvote.findUnique({
       where: {
         questionId_userId: {
@@ -95,7 +94,6 @@ const upvoteQuestion = async (req, res) => {
       return res.status(400).json({ error: 'Vous avez déjà voté pour cette question' });
     }
 
-    // Créer le vote et incrémenter le compteur atomiquement
     const [upvote, updatedQuestion] = await prisma.$transaction([
       prisma.upvote.create({
         data: { questionId, userId }
@@ -134,7 +132,6 @@ const unvoteQuestion = async (req, res) => {
       return res.status(403).json({ error: 'Impossible de voter : la session n\'est pas en cours' });
     }
 
-    // Vérifier si le vote existe
     const existingUpvote = await prisma.upvote.findUnique({
       where: {
         questionId_userId: {
@@ -148,7 +145,6 @@ const unvoteQuestion = async (req, res) => {
       return res.status(400).json({ error: 'Vous n\'avez pas encore voté pour cette question' });
     }
 
-    // Supprimer le vote et décrémenter le compteur atomiquement
     const [deletedUpvote, updatedQuestion] = await prisma.$transaction([
       prisma.upvote.delete({
         where: {

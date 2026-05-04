@@ -1,6 +1,5 @@
 const prisma = require('../lib/prisma')
 
-// GET /events/:eventId/sessions
 const getSessionsByEvent = async (req, res) => {
   try {
     const { eventId } = req.params
@@ -26,7 +25,6 @@ const getSessionsByEvent = async (req, res) => {
   }
 }
 
-// GET /sessions/:id
 const getSessionById = async (req, res) => {
   try {
     const { id } = req.params
@@ -59,7 +57,6 @@ const getSessionById = async (req, res) => {
   }
 }
 
-// POST /sessions
 const createSession = async (req, res) => {
   try {
     const { title, description, startTime, endTime, capacity,  eventId, roomId, speakerIds } = req.body
@@ -89,7 +86,6 @@ const createSession = async (req, res) => {
   }
 }
 
-// PUT /sessions/:id
 const updateSession = async (req, res) => {
   try {
     const { id } = req.params
@@ -120,7 +116,6 @@ const updateSession = async (req, res) => {
   }
 }
 
-// DELETE /sessions/:id
 const deleteSession = async (req, res) => {
   try {
     const { id } = req.params
@@ -135,7 +130,6 @@ const deleteSession = async (req, res) => {
   }
 }
 
-// Get event/:id/schedule
 const getEventSessionSchedule = async(req, res) => {
   try {
   const { id } = req.params

@@ -10,7 +10,6 @@ const {
   getSpeakerSessions,
 } = require("../controllers/speaker.controller");
 
-// Create uploads directory if it doesn't exist
 const uploadDir = path.join(__dirname, "../../uploads");
 const fs = require("fs");
 if (!fs.existsSync(uploadDir)) {
