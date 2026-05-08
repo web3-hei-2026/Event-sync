@@ -9,4 +9,8 @@ router.post("/sessions", sessionController.createSession);
 router.put("/sessions/:id", sessionController.updateSession);
 router.delete("/sessions/:id", sessionController.deleteSession);
 
+router.get("/test", (req, res) => {
+  res.json({ ok: true, message: "sessions route working" });
+});
+
 module.exports = router;
