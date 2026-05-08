@@ -69,6 +69,19 @@ CREATE TABLE "questions" (
     CONSTRAINT "questions_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "upvotes" (
+    "id" TEXT NOT NULL,
+    "questionId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "upvotes_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "upvotes_questionId_userId_key" ON "upvotes"("questionId", "userId");
+
 -- AddForeignKey
 ALTER TABLE "sessions" ADD CONSTRAINT "sessions_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "events"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
@@ -83,3 +96,6 @@ ALTER TABLE "session_speakers" ADD CONSTRAINT "session_speakers_speakerId_fkey" 
 
 -- AddForeignKey
 ALTER TABLE "questions" ADD CONSTRAINT "questions_sessionId_fkey" FOREIGN KEY ("sessionId") REFERENCES "sessions"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "upvotes" ADD CONSTRAINT "upvotes_questionId_fkey" FOREIGN KEY ("questionId") REFERENCES "questions"("id") ON DELETE CASCADE ON UPDATE CASCADE;
