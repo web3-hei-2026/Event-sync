@@ -1,96 +1,167 @@
-const prisma = require('../lib/prisma')
+const prisma = require("../lib/prisma");
 
+
+// =========================
+// GET /events/:eventId/sessions
+// =========================
 const getSessionsByEvent = async (req, res) => {
   try {
-    const { eventId } = req.params
-    const now = new Date()
-    
+    const { eventId } = req.params;
+    const now = new Date();
+
     const sessions = await prisma.session.findMany({
       where: { eventId },
       include: {
         room: true,
-        speakers: true
+        speakers: {
+          include: {
+            speaker: true,
+          },
+        },
       },
-      orderBy: { startTime: 'asc' }
-    })
-    
-    const sessionsWithLive = sessions.map(session => ({
-      ...session,
-      isLive: now >= session.startTime && now <= session.endTime
-    }))
-    
-    res.json(sessionsWithLive)
-  } catch (error) {
-    res.status(500).json({ error: error.message })
-  }
-}
+      orderBy: { startTime: "asc" },
+    });
 
+    const formatted = sessions.map((s) => ({
+      ...s,
+      isLive: now >= s.startTime && now <= s.endTime,
+      speakers: s.speakers.map((ss) => ss.speaker),
+    }));
+
+    res.json(formatted);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+// =========================
+// GET /sessions/:id
+// =========================
 const getSessionById = async (req, res) => {
   try {
-    const { id } = req.params
-    const now = new Date()
-    
+    const { id } = req.params;
+    const now = new Date();
+
     const session = await prisma.session.findUnique({
       where: { id },
       include: {
         event: true,
         room: true,
-        speakers: true,
+        speakers: {
+          include: {
+            speaker: true,
+          },
+        },
         questions: {
-          orderBy: { upvotes: 'desc' }
-        }
-      }
-    })
-    
-    if (!session) {
-      return res.status(404).json({ error: 'Session not found' })
-    }
-    
-    const sessionWithLive = {
-      ...session,
-      isLive: now >= session.startTime && now <= session.endTime
-    }
-    
-    res.json(sessionWithLive)
-  } catch (error) {
-    res.status(500).json({ error: error.message })
-  }
-}
+          orderBy: { upvotes: "desc" },
+        },
+      },
+    });
 
+    if (!session) {
+      return res.status(404).json({ error: "Session not found" });
+    }
+
+    res.json({
+      ...session,
+      isLive: now >= session.startTime && now <= session.endTime,
+      speakers: session.speakers.map((ss) => ss.speaker),
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+// =========================
+// POST /sessions
+// =========================
 const createSession = async (req, res) => {
   try {
-    const { title, description, startTime, endTime, capacity,  eventId, roomId, speakerIds } = req.body
-    
+    const {
+      title,
+      description,
+      startTime,
+      endTime,
+      capacity,
+      eventId,
+      roomId,
+      speakerIds,
+    } = req.body;
+
+    // Validation
+    if (!title || !startTime || !endTime || !eventId || !roomId) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+
+    if (isNaN(start) || isNaN(end)) {
+      return res.status(400).json({ error: "Invalid date format" });
+    }
+
     const session = await prisma.session.create({
       data: {
         title,
         description,
-        startTime: new Date(startTime),
-        endTime: new Date(endTime),
-        capacity: capacity || 0,
+        startTime: start,
+        endTime: end,
+        capacity: capacity ?? null,
         eventId,
         roomId,
-        speakers: {
-          connect: speakerIds?.map(id => ({ id })) || []
-        }
+
+        // pivot relation (SessionSpeaker)
+        speakers: speakerIds?.length
+          ? {
+              create: speakerIds.map((id) => ({
+                speaker: {
+                  connect: { id },
+                },
+              })),
+            }
+          : undefined,
       },
       include: {
         room: true,
-        speakers: true
-      }
-    })
-    
-    res.status(201).json(session)
-  } catch (error) {
-    res.status(500).json({ error: error.message })
-  }
-}
+        speakers: {
+          include: {
+            speaker: true,
+          },
+        },
+      },
+    });
 
+    res.status(201).json({
+      ...session,
+      speakers: session.speakers.map((ss) => ss.speaker),
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+// =========================
+// PUT /sessions/:id
+// =========================
 const updateSession = async (req, res) => {
   try {
-    const { id } = req.params
-    const { title, description, startTime, endTime, capacity, roomId, speakerIds } = req.body
-    
+    const { id } = req.params;
+    const {
+      title,
+      description,
+      startTime,
+      endTime,
+      capacity,
+      roomId,
+      speakerIds,
+    } = req.body;
+
     const session = await prisma.session.update({
       where: { id },
       data: {
@@ -100,78 +171,109 @@ const updateSession = async (req, res) => {
         endTime: endTime ? new Date(endTime) : undefined,
         capacity,
         roomId,
-        speakers: {
-          set: speakerIds?.map(id => ({ id })) || []
-        }
+
+        // reset + recreate relations proprement
+        speakers: speakerIds?.length
+          ? {
+              deleteMany: {},
+              create: speakerIds.map((id) => ({
+                speaker: {
+                  connect: { id },
+                },
+              })),
+            }
+          : undefined,
       },
       include: {
         room: true,
-        speakers: true
-      }
-    })
-    
-    res.json(session)
-  } catch (error) {
-    res.status(500).json({ error: error.message })
-  }
-}
+        speakers: {
+          include: {
+            speaker: true,
+          },
+        },
+      },
+    });
 
+    res.json({
+      ...session,
+      speakers: session.speakers.map((ss) => ss.speaker),
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+// =========================
+// DELETE /sessions/:id
+// =========================
 const deleteSession = async (req, res) => {
   try {
-    const { id } = req.params
-    
+    const { id } = req.params;
+
     await prisma.session.delete({
-      where: { id }
-    })
-    
-    res.status(204).send()
+      where: { id },
+    });
+
+    res.status(204).send();
   } catch (error) {
-    res.status(500).json({ error: error.message })
+    console.error(error);
+    res.status(500).json({ error: error.message });
   }
-}
+};
 
-const getEventSessionSchedule = async(req, res) => {
+
+// =========================
+// GET /events/:id/schedule
+// =========================
+const getEventSessionSchedule = async (req, res) => {
   try {
-  const { id } = req.params
-  const now = new Date()
+    const { id } = req.params;
+    const now = new Date();
 
-  const sessions = await prisma.session.findMany({
-    where: { eventId: id },
-    include: {
-      event: true,
-      room: true,
-      speakers: {
-        include: {
-          speaker: true
-        }
+    const sessions = await prisma.session.findMany({
+      where: { eventId: id },
+      include: {
+        event: true,
+        room: true,
+        speakers: {
+          include: {
+            speaker: true,
+          },
+        },
+        questions: {
+          orderBy: { upvotes: "desc" },
+        },
       },
-      questions: {
-        orderBy: { upvotes: 'desc' }
-      }
+    });
+
+    if (!sessions.length) {
+      return res.status(404).json({ error: "No sessions found for this event" });
     }
-  })
 
-  if (sessions.length === 0) {
-    return res.status(404).json({ error: 'No sessions found for this event' })
+    const formatted = sessions.map((s) => ({
+      ...s,
+      isLive: now >= s.startTime && now <= s.endTime,
+      speakers: s.speakers.map((ss) => ss.speaker),
+    }));
+
+    res.json(formatted);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
   }
+};
 
-  const result = sessions.map(session => ({
-    ...session,
-    isLive: now >= session.startTime && now <= session.endTime
-  }))
 
-  res.json(result)
-
-} catch (error) {
-  res.status(500).json({ error: error.message })
-}
-}
-
+// =========================
+// EXPORT
+// =========================
 module.exports = {
   getSessionsByEvent,
   getSessionById,
   createSession,
   updateSession,
   deleteSession,
-  getEventSessionSchedule
-}
+  getEventSessionSchedule,
+};
