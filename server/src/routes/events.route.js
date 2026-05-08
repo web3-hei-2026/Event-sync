@@ -1,8 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const { getEvents, getEventById } = require('../controllers/events.controller');
+
+const {
+  getEvents,
+  getEventById,
+  createEvent,
+} = require('../controllers/events.controller');
 
 router.get('/', getEvents);
 router.get('/:id', getEventById);
+router.post('/', createEvent);
 
 module.exports = router;
