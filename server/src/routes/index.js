@@ -1,15 +1,10 @@
 const express = require("express");
+const router = express.Router();
 
-const eventsRouter = require("./events.route");
-const roomsRouter = require("./rooms.route");
-const questionsRouter = require("./questions.route");
-const sessionsRouter = require("./session.route");
-const speakersRouter = require("./speaker.route");
+router.use("/events", require("./events.route"));
+router.use("/rooms", require("./rooms.route"));
+router.use("/sessions", require("./session.route"));
+router.use("/speakers", require("./speaker.route"));
+router.use("/questions", require("./questions.route"));
 
-module.exports = (app) => {
-  app.use("/api/events", eventsRouter);
-  app.use("/api/rooms", roomsRouter);
-  app.use("/api", questionsRouter);
-  app.use("/api", sessionsRouter);
-  app.use("/api", speakersRouter);
-};
+module.exports = router;

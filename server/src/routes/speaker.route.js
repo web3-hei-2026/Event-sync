@@ -3,6 +3,8 @@ const router = express.Router();
 
 const multer = require("multer");
 const path = require("path");
+const fs = require("fs");
+
 const {
   createSpeaker,
   getAllSpeakers,
@@ -11,7 +13,7 @@ const {
 } = require("../controllers/speaker.controller");
 
 const uploadDir = path.join(__dirname, "../../uploads");
-const fs = require("fs");
+
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }

@@ -58,8 +58,23 @@ const getRoomSessions = async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 };
+const createRoom = async (req, res) => {
+  try {
+    const { name } = req.body;
+
+    const room = await prisma.room.create({
+      data: { name },
+    });
+
+    res.status(201).json(room);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
 
 module.exports = {
   getRooms,
   getRoomSessions,
+  createRoom,
 };

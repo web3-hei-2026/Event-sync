@@ -1,5 +1,8 @@
 const prisma = require('../lib/prisma');
 
+/**
+ * GET ALL EVENTS
+ */
 const getEvents = async (req, res) => {
   try {
     const events = await prisma.event.findMany({
@@ -13,13 +16,17 @@ const getEvents = async (req, res) => {
         location: true,
       },
     });
+
     res.json(events);
   } catch (error) {
-    console.error(error);
+    console.error("getEvents error:", error);
     res.status(500).json({ message: 'Internal server error' });
   }
 };
 
+/**
+ * GET EVENT BY ID
+ */
 const getEventById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -40,11 +47,20 @@ const getEventById = async (req, res) => {
             title: true,
             startTime: true,
             endTime: true,
-            room: { select: { id: true, name: true } },
+            room: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
             speakers: {
               select: {
                 speaker: {
-                  select: { id: true, fullName: true, photoUrl: true },
+                  select: {
+                    id: true,
+                    fullName: true,
+                    photoUrl: true,
+                  },
                 },
               },
             },
@@ -54,10 +70,11 @@ const getEventById = async (req, res) => {
     });
 
     if (!event) {
-      return res.status(404).json({ message: 'Resource not found' });
+      return res.status(404).json({ message: 'Event not found' });
     }
 
     const now = new Date();
+
     const formatted = {
       ...event,
       sessions: event.sessions.map((s) => ({
@@ -73,12 +90,39 @@ const getEventById = async (req, res) => {
 
     res.json(formatted);
   } catch (error) {
-    console.error(error);
+    console.error("getEventById error:", error);
     res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+const createEvent = async (req, res) => {
+  try {
+    const { title, description, startDate, endDate, location } = req.body;
+
+    // validation simple
+    if (!title || !startDate || !endDate) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    const newEvent = await prisma.event.create({
+      data: {
+        title,
+        description,
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
+        location,
+      },
+    });
+
+    res.status(201).json(newEvent);
+  } catch (error) {
+    console.error("createEvent error:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
 module.exports = {
   getEvents,
   getEventById,
+  createEvent,
 };
