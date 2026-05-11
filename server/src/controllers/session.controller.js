@@ -1,18 +1,20 @@
 const prisma = require("../lib/prisma");
 
-
 // Récupérer toutes les sessions
 const getAllSessions = async (req, res) => {
   try {
     const sessions = await prisma.session.findMany({
       include: {
-        room: true,    // Pour voir le nom de la salle
-        event: true    // Pour voir à quel événement c'est lié
-      }
+        room: true, // Pour voir le nom de la salle
+        event: true, // Pour voir à quel événement c'est lié
+      },
     });
     res.json(sessions);
   } catch (error) {
-    res.status(500).json({ message: "Erreur lors de la récupération", error: error.message });
+    res.status(500).json({
+      message: "Erreur lors de la récupération",
+      error: error.message,
+    });
   }
 };
 
@@ -21,7 +23,7 @@ const getAllSessions = async (req, res) => {
 // =========================
 const getSessionsByEvent = async (req, res) => {
   try {
-    const { eventId } = req.params;
+    const eventId = req.params.eventId ?? req.params.id;
     const now = new Date();
 
     const sessions = await prisma.session.findMany({
@@ -32,6 +34,9 @@ const getSessionsByEvent = async (req, res) => {
           include: {
             speaker: true,
           },
+        },
+        questions: {
+          orderBy: { upvotes: "desc" },
         },
       },
       orderBy: { startTime: "asc" },
@@ -49,7 +54,6 @@ const getSessionsByEvent = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 
 // =========================
 // GET /sessions/:id
@@ -89,7 +93,6 @@ const getSessionById = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 
 // =========================
 // POST /sessions
@@ -160,7 +163,6 @@ const createSession = async (req, res) => {
   }
 };
 
-
 // =========================
 // PUT /sessions/:id
 // =========================
@@ -219,7 +221,6 @@ const updateSession = async (req, res) => {
   }
 };
 
-
 // =========================
 // DELETE /sessions/:id
 // =========================
@@ -238,17 +239,16 @@ const deleteSession = async (req, res) => {
   }
 };
 
-
 // =========================
 // GET /events/:id/schedule
 // =========================
 const getEventSessionSchedule = async (req, res) => {
   try {
-    const { id } = req.params;
+    const eventId = req.params.eventId ?? req.params.id;
     const now = new Date();
 
     const sessions = await prisma.session.findMany({
-      where: { eventId: id },
+      where: { eventId },
       include: {
         event: true,
         room: true,
@@ -264,7 +264,9 @@ const getEventSessionSchedule = async (req, res) => {
     });
 
     if (!sessions.length) {
-      return res.status(404).json({ error: "No sessions found for this event" });
+      return res
+        .status(404)
+        .json({ error: "No sessions found for this event" });
     }
 
     const formatted = sessions.map((s) => ({
@@ -279,7 +281,6 @@ const getEventSessionSchedule = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 
 // =========================
 // EXPORT
