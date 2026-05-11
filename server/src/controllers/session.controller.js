@@ -1,6 +1,21 @@
 const prisma = require("../lib/prisma");
 
 
+// Récupérer toutes les sessions
+const getAllSessions = async (req, res) => {
+  try {
+    const sessions = await prisma.session.findMany({
+      include: {
+        room: true,    // Pour voir le nom de la salle
+        event: true    // Pour voir à quel événement c'est lié
+      }
+    });
+    res.json(sessions);
+  } catch (error) {
+    res.status(500).json({ message: "Erreur lors de la récupération", error: error.message });
+  }
+};
+
 // =========================
 // GET /events/:eventId/sessions
 // =========================
@@ -270,6 +285,7 @@ const getEventSessionSchedule = async (req, res) => {
 // EXPORT
 // =========================
 module.exports = {
+  getAllSessions,
   getSessionsByEvent,
   getSessionById,
   createSession,

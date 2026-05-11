@@ -7,7 +7,7 @@ const { getSessionsByEvent, getEventSessionSchedule } = require('../controllers/
 router.get('/', getEvents);
 router.get('/:id', getEventById);
 router.post('/', createEvent);
-router.get('/:id/sessions', getSessionsByEvent);
-router.get('/:id/schedule', getEventSessionSchedule);
+router.get('/:eventId/sessions', getSessionsByEvent);
+router.get('/:eventId/schedule', getEventSessionSchedule);
 
 module.exports = router;
