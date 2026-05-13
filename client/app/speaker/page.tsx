@@ -88,7 +88,7 @@ export default function SpeakersPage() {
           Intervenants
         </h1>
 
-        <p className="text-gray-500">
+        <p className="text-muted-foreground">
           Découvrez les experts qui partagent leur savoir à EventSync Conf.
         </p>
       </header>
@@ -104,35 +104,39 @@ export default function SpeakersPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            className="group relative flex flex-col items-center text-center p-8 rounded-3xl border bg-white hover:border-blue-600 transition-all overflow-hidden shadow-sm"
+            className="group relative flex flex-col items-center text-center p-8 rounded-3xl border-1 bg-card hover:border-[#D403E1] transition-all overflow-hidden  w-[400px] border-[#460071]"
           >
 
-            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-100 blur-3xl -z-10 border-2 border-blue-700 " />
+            <div className="absolute top-0 right-0 w-96 bg-[#37013b] h-32 bg-primary/5 blur-3xl -z-10" />
 
               <img
-               src={`http://localhost:5000${speaker.photoUrl}`}
+                src={`http://localhost:5000${speaker.photoUrl}`}
                 alt={speaker.fullName}
-                className="w-32 h-32 rounded-full object-cover mb-6 border-4 border-gray-200 group-hover:border-blue-600 transition-colors"
+                className="w-32 h-32 rounded-full object-cover mb-6 border-4  border-[#460071] border-muted group-hover:border-[#D403E1] transition-colors"
               />
 
               <h3 className="text-2xl font-bold mb-2">
                 {speaker.fullName}
               </h3>
 
-              <p className=" text-sm line-clamp-3 mb-6">
+              <p className="text-muted-foreground text-sm line-clamp-3 mb-6">
                 {speaker.biography}
               </p>
-
-              <button
-                onClick={() => setSelectedSpeaker(speaker)}
-                className="w-full border rounded-xl py-3 px-4 hover:bg-[#D403E1] hover:text-white transition-all flex items-center justify-center font-medium"
-              >
+              <div className="flex flex-col gap-4 mt-auto w-full">
+                <div className="text-xs font-bold text-primary uppercase tracking-widest">
+                  1
+                </div>
+                <button
+                  onClick={() => setSelectedSpeaker(speaker)}
+                  className="w-full bg-gradient-to-r from-[#460071] to-[#D403E1] py-3 px-4 hover:bg-gradient-to-r hover:from-[#D403E1] hover:to-[#460071] hover:text-white transition-all flex items-center justify-center font-medium"
+                >
 
                 Voir le profil
 
-                <ArrowRight className="ml-2 w-4 h-4" />
+                  <ArrowRight className="ml-2 w-4 h-4" />
 
-              </button>
+                </button>
+              </div>
 
             </motion.div>
         ))}
@@ -142,170 +146,173 @@ export default function SpeakersPage() {
       {/* MODAL */}
 
       <AnimatePresence>
-
-        {selectedSpeaker && (
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
-          >
-
+          {selectedSpeaker && (
+            
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-3xl max-w-5xl w-full max-h-[90vh] overflow-y-auto relative shadow-2xl"
-            >
-
-              {/* CLOSE BUTTON */}
-
-              <button
-                onClick={closeModal}
-                className="absolute top-5 right-5 z-10 p-2 rounded-full hover:bg-gray-100 transition"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-white/3 backdrop-blur-md z-50 flex items-center justify-center p-4"
               >
-                <X className="w-6 h-6" />
-              </button>
 
-              {/* CONTENT */}
+                <motion.div
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.9, opacity: 0 }}
+                  className="rounded-3xl max-w-5xl w-full max-h-[90vh] overflow-y-auto relative shadow-2xl"
+                >
 
-              <div className="p-8 md:p-12 flex flex-col gap-12">
+            <div className="w-full bg-black h-screen">
+                  {/* CLOSE BUTTON */}
 
-                {/* TOP SECTION */}
+                  <button
+                    onClick={closeModal}
+                    className="absolute top-5 right-5 z-10 p-2 rounded-full hover:bg-gray-100 transition"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
 
-                <section className="flex flex-col md:flex-row gap-12 items-start">
+                  {/* CONTENT */}
 
-                  {/* IMAGE */}
+                  <div className="p-8 md:p-12 flex flex-col gap-12">
 
-                  <div className="relative shrink-0">
+                    {/* TOP SECTION */}
 
-                    <div className="absolute -inset-1 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-3xl blur opacity-30" />
+                    <section className="flex flex-col md:flex-row gap-12 items-start">
 
-                    <img
-                      src={selectedSpeaker.photo}
-                      alt={selectedSpeaker.fullName}
-                      className="w-48 h-48 md:w-64 md:h-64 rounded-3xl object-cover relative border border-white/10"
-                    />
+                      {/* IMAGE */}
 
-                  </div>
+                      <div className="relative shrink-0">
 
-                  {/* INFO */}
+                        <div className="absolute -inset-1 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-3xl blur opacity-30" />
 
-                  <div className="flex flex-col gap-6">
-
-                    <div className="flex flex-col gap-4">
-
-                      <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
-                        {selectedSpeaker.fullName}
-                      </h1>
-
-                      {/* SOCIAL LINKS */}
-
-                      <div className="flex gap-4">
-
-                        {selectedSpeaker.twitter && (
-                          <a
-                            href={selectedSpeaker.twitter}
-                            target="_blank"
-                            className="p-3 rounded-full bg-gray-100 hover:text-blue-600 transition-all"
-                          >
-                            {getIcon("twitter")}
-                          </a>
-                        )}
-
-                        {selectedSpeaker.linkedin && (
-                          <a
-                            href={selectedSpeaker.linkedin}
-                            target="_blank"
-                            className="p-3 rounded-full bg-gray-100 hover:text-blue-600 transition-all"
-                          >
-                            {getIcon("linkedin")}
-                          </a>
-                        )}
-
-                        {selectedSpeaker.github && (
-                          <a
-                            href={selectedSpeaker.github}
-                            target="_blank"
-                            className="p-3 rounded-full bg-gray-100 hover:text-blue-600 transition-all"
-                          >
-                            {getIcon("github")}
-                          </a>
-                        )}
+                        <img
+                          src={`http://localhost:5000${selectedSpeaker.photoUrl}`}
+                          alt={selectedSpeaker.fullName}
+                          className="w-48 h-48 md:w-64 md:h-64 rounded-3xl object-cover relative border border-white/10"
+                        />
 
                       </div>
 
-                    </div>
+                      {/* INFO */}
 
-                    {/* BIO */}
+                      <div className="flex flex-col gap-6">
 
-                    <p className="text-lg text-gray-600 leading-relaxed">
-                      {selectedSpeaker.biography}
-                    </p>
+                        <div className="flex flex-col gap-4">
 
-                  </div>
+                          <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
+                            {selectedSpeaker.fullName}
+                          </h1>
 
-                </section>
+                          {/* SOCIAL LINKS */}
 
-                {/* SESSIONS */}
+                          <div className="flex gap-4">
 
-                <section className="flex flex-col gap-8">
+                            {selectedSpeaker.externalLinks && (
+                              <a
+                                href={selectedSpeaker.externalLinks}
+                                target="_blank"
+                                className="p-3 rounded-full  hover:text-blue-600 transition-all flex gap-3 text-center "
+                              >
+                                {getIcon("twitter")} {selectedSpeaker.externalLinks}
+                              </a>
+                            )}
 
-                  <h3 className="text-2xl font-bold flex items-center gap-3">
+                            {selectedSpeaker.linkedin && (
+                              <a
+                                href={selectedSpeaker.linkedin}
+                                target="_blank"
+                                className="p-3 rounded-full bg-gray-100 hover:text-blue-600 transition-all"
+                              >
+                                {getIcon("linkedin")}
+                              </a>
+                            )}
 
-                    <Calendar className="w-6 h-6 text-blue-600" />
+                            {selectedSpeaker.github && (
+                              <a
+                                href={selectedSpeaker.github}
+                                target="_blank"
+                                className="p-3 rounded-full bg-gray-100 hover:text-blue-600 transition-all"
+                              >
+                                {getIcon("github")}
+                              </a>
+                            )}
 
-                    Sessions
+                          </div>
 
-                  </h3>
+                        </div>
 
-                  <div className="grid gap-4">
+                        {/* BIO */}
 
-                    <div className="p-6 rounded-2xl border hover:border-blue-600 transition-all flex justify-between items-center">
-
-                      <div className="flex flex-col gap-1">
-
-                        <span className="text-xs text-blue-600 font-bold uppercase tracking-widest">
-                          09:00 — Salle A
-                        </span>
-
-                        <h4 className="text-xl font-bold">
-                          Introduction à Next.js
-                        </h4>
+                        <p className="text-lg text-gray-600 leading-relaxed">
+                          {selectedSpeaker.biography}
+                        </p>
 
                       </div>
 
-                    </div>
+                    </section>
 
-                    <div className="p-6 rounded-2xl border hover:border-blue-600 transition-all flex justify-between items-center">
+                    {/* SESSIONS */}
 
-                      <div className="flex flex-col gap-1">
+                    <section className="flex flex-col gap-8">
 
-                        <span className="text-xs text-blue-600 font-bold uppercase tracking-widest">
-                          14:00 — Salle B
-                        </span>
+                      <h3 className="text-2xl font-bold flex items-center gap-3">
 
-                        <h4 className="text-xl font-bold">
-                          Architecture Frontend Moderne
-                        </h4>
+                        <Calendar className="w-6 h-6 text-blue-600" />
+
+                        Sessions
+
+                      </h3>
+
+                      <div className="grid gap-4">
+
+                        <div className="p-6 rounded-2xl border hover:border-blue-600 transition-all flex justify-between items-center">
+
+                          <div className="flex flex-col gap-1">
+
+                            <span className="text-xs text-blue-600 font-bold uppercase tracking-widest">
+                              09:00 — Salle A
+                            </span>
+
+                            <h4 className="text-xl font-bold">
+                              Introduction à Next.js
+                            </h4>
+
+                          </div>
+
+                        </div>
+
+                        <div className="p-6 rounded-2xl border hover:border-blue-600 transition-all flex justify-between items-center">
+
+                          <div className="flex flex-col gap-1">
+
+                            <span className="text-xs text-blue-600 font-bold uppercase tracking-widest">
+                              14:00 — Salle B
+                            </span>
+
+                            <h4 className="text-xl font-bold">
+                              Architecture Frontend Moderne
+                            </h4>
+
+                          </div>
+
+                        </div>
 
                       </div>
 
-                    </div>
+                    </section>
 
                   </div>
 
-                </section>
+        </div>
+                </motion.div>
 
-              </div>
+              </motion.div>
 
-            </motion.div>
+            )}
 
-          </motion.div>
 
-        )}
-
+       
       </AnimatePresence>
 
     </div>
