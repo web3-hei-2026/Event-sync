@@ -15,7 +15,7 @@ interface Speaker {
   id: number;
   fullName: string;
   biography: string;
-  photo: string;
+  photoUrl: string;
   linkedin?: string;
   github?: string;
   twitter?: string;
@@ -107,34 +107,34 @@ export default function SpeakersPage() {
             className="group relative flex flex-col items-center text-center p-8 rounded-3xl border bg-white hover:border-blue-600 transition-all overflow-hidden shadow-sm"
           >
 
-            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-100 blur-3xl -z-10" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-100 blur-3xl -z-10 border-2 border-blue-700 " />
 
-            <img
-              src={speaker.photo}
-              alt={speaker.fullName}
-              className="w-32 h-32 rounded-full object-cover mb-6 border-4 border-gray-200 group-hover:border-blue-600 transition-colors"
-            />
+              <img
+               src={`http://localhost:5000${speaker.photoUrl}`}
+                alt={speaker.fullName}
+                className="w-32 h-32 rounded-full object-cover mb-6 border-4 border-gray-200 group-hover:border-blue-600 transition-colors"
+              />
 
-            <h3 className="text-2xl font-bold mb-2">
-              {speaker.fullName}
-            </h3>
+              <h3 className="text-2xl font-bold mb-2">
+                {speaker.fullName}
+              </h3>
 
-            <p className="text-gray-500 text-sm line-clamp-3 mb-6">
-              {speaker.biography}
-            </p>
+              <p className=" text-sm line-clamp-3 mb-6">
+                {speaker.biography}
+              </p>
 
-            <button
-              onClick={() => setSelectedSpeaker(speaker)}
-              className="w-full border rounded-xl py-3 px-4 hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center font-medium"
-            >
+              <button
+                onClick={() => setSelectedSpeaker(speaker)}
+                className="w-full border rounded-xl py-3 px-4 hover:bg-[#D403E1] hover:text-white transition-all flex items-center justify-center font-medium"
+              >
 
-              Voir le profil
+                Voir le profil
 
-              <ArrowRight className="ml-2 w-4 h-4" />
+                <ArrowRight className="ml-2 w-4 h-4" />
 
-            </button>
+              </button>
 
-          </motion.div>
+            </motion.div>
         ))}
 
       </section>
