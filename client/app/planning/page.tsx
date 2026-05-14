@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { getEvents, getEvent } from '@/lib/api';
+import Link from 'next/link'; // <--- Ajouté pour la navigation
 
 const fmtDay = (iso: string) => new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit' });
 const fmtMonth = (iso: string) => new Date(iso).toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '');
@@ -26,9 +27,9 @@ export default function PlanningPage() {
   return (
     <div className="min-h-screen bg-[#0a0a1a] text-white py-10 px-4 flex flex-col items-center font-['Inter']">
       
-      {/* HEADER : Style identique à "Tous les événements" (image_954e5e.png) */}
-      <header className="w-full max-w-[1200px] mt-2 mb-12 text-center">
-        <h1 className="text-xl md:text-5xl font-bold tracking-tight font-['Poppins'] normal-case">
+      {/* HEADER : Style Ny (image_954e5e.png) */}
+      <header className="w-full max-w-[1200px] mt-8 mb-16 text-center">
+        <h1 className="text-4xl md:text-5xl font-bold tracking-tight font-['Poppins'] normal-case">
           Planning <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D403E1] to-[#03CCFF]">des sessions</span>
         </h1>
       </header>
@@ -54,7 +55,7 @@ export default function PlanningPage() {
                 </div>
               </div>
 
-              {/* GRILLE DES SESSIONS : Espacement resserré */}
+              {/* GRILLE DES SESSIONS */}
               <div className="flex-1 bg-[#0a0a1a]/40 divide-y divide-white/5">
                 {Object.entries(grouped).map(([time, slots]) => (
                   <div key={time} className="flex flex-col sm:flex-row items-stretch min-h-[180px]">
@@ -66,13 +67,16 @@ export default function PlanningPage() {
                       </span>
                     </div>
 
-                    {/* Zone des sessions : Padding p-4 pour plus de proximité */}
+                    {/* Zone des sessions cliquables */}
                     <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4">
                       {slots.map((s: any) => (
-                        <div key={s.id} className="bg-white/[0.03] rounded-[28px] hover:bg-white/[0.05] transition-all flex flex-col p-5 group border border-white/5">
-                          
+                        <Link 
+                          key={s.id} 
+                          href={`/sessions/${s.id}`} 
+                          className="bg-white/[0.03] rounded-[28px] hover:bg-white/[0.07] hover:scale-[1.02] transition-all flex flex-col p-5 group border border-white/5"
+                        >
                           <div className="flex flex-col gap-1.5">
-                            <h3 className="font-bold text-[16px] leading-tight text-white uppercase font-['Poppins']">
+                            <h3 className="font-bold text-[16px] leading-tight text-white uppercase font-['Poppins'] group-hover:text-[#03CCFF] transition-colors">
                               {s.title}
                             </h3>
                             <span className="text-[#03CCFF] text-[11px] font-extrabold uppercase tracking-widest flex items-center gap-1">
@@ -88,8 +92,7 @@ export default function PlanningPage() {
                               </span>
                             </div>
                           </div>
-
-                        </div>
+                        </Link>
                       ))}
                     </div>
 
