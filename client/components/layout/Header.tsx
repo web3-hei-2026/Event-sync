@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 
 export default function Header() {
   const pathname = usePathname();
+  const normalizedPathname = pathname?.replace(/\/$/, '') ?? '';
 
   const links = [
     { href: '/events', label: 'Événements' },
@@ -23,20 +24,23 @@ export default function Header() {
       </Link>
 
       <nav style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
-        {links.map((link) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            style={{
-              color: pathname === link.href ? '#09FBFF' : '#a0a0c0',
-              fontSize: 14, textDecoration: 'none',
-              borderBottom: pathname === link.href ? '1px solid #09FBFF' : 'none',
-              paddingBottom: 2,
-            }}
-          >
-            {link.label}
-          </Link>
-        ))}
+        {links.map((link) => {
+          const isActive = normalizedPathname === link.href || normalizedPathname.startsWith(`${link.href}/`);
+          return (
+            <Link
+              key={link.href}
+              href={link.href}
+              style={{
+                color: isActive ? '#09FBFF' : '#a0a0c0',
+                fontSize: 14, textDecoration: 'none',
+                borderBottom: isActive ? '1px solid #09FBFF' : 'none',
+                paddingBottom: 2,
+              }}
+            >
+              {link.label}
+            </Link>
+          );
+        })}
       </nav>
 
       <button style={{
