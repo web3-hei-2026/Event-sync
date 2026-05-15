@@ -46,9 +46,8 @@ function StatusBadge({ status }: { status: "live" | "upcoming" | "past" }) {
 export default function SessionCard({ session, now }: { session: SessionSummary; now: number }) {
   const status = getStatus(session, now);
   
-  // LOGIQUE RÉTABLIE : On initialise selon si la session est déjà en favori
-  // Idéalement, cette info devrait venir de session.isFavorite ou de ton context
-  const [isFav, setIsFav] = useState(session.isFavorite || false); 
+
+  const [isFav, setIsFav] = useState<boolean>(() => Boolean((session as SessionSummary & { isFavorite?: boolean }).isFavorite ?? false));
 
   return (
     <Link
@@ -125,20 +124,20 @@ export default function SessionCard({ session, now }: { session: SessionSummary;
           border: '1px solid rgba(255, 255, 255, 0.1)',
         }}
         onClick={(e) => {
-            e.preventDefault(); // Empêche le lien de s'ouvrir
-            e.stopPropagation(); // Empêche l'événement de monter
+            e.preventDefault(); 
+            e.stopPropagation(); 
             setIsFav(!isFav);
         }}
       >
         <Star 
             size={14} 
-            fill={isFav ? "#FACC15" : "none"} // Jaune si fav, vide sinon
-            color={isFav ? "#FACC15" : "#8888aa"} // Contour jaune si fav, gris sinon
+            fill={isFav ? "#FACC15" : "none"} 
+            color={isFav ? "#FACC15" : "#8888aa"} 
         />
         <span style={{ 
             fontSize: '10px', 
             fontWeight: 'bold', 
-            color: isFav ? '#FACC15' : '#8888aa', // Texte jaune si fav, gris sinon
+            color: isFav ? '#FACC15' : '#8888aa',
             fontStyle: 'italic',
             letterSpacing: '0.05em'
         }}>

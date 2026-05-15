@@ -5,14 +5,13 @@ import { Star } from 'lucide-react';
 export default function FavoriteButton({ sessionId }: { sessionId: string }) {
   const [isFav, setIsFav] = useState(false);
 
-  // Vérifie si la session est déjà en favoris au chargement
   useEffect(() => {
     const favs = JSON.parse(localStorage.getItem('eventsync_favorites') || '[]');
     setIsFav(favs.includes(sessionId));
   }, [sessionId]);
 
   const toggleFav = (e: React.MouseEvent) => {
-    e.preventDefault(); // Empêche de naviguer si on clique sur le bouton
+    e.preventDefault();
     const favs = JSON.parse(localStorage.getItem('eventsync_favorites') || '[]');
     let newFavs;
     

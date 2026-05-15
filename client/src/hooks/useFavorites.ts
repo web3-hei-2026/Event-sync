@@ -1,10 +1,8 @@
-// src/hooks/useFavorites.ts
 import { useState, useEffect } from 'react';
 
 export function useFavorites() {
   const [favorites, setFavorites] = useState<string[]>([]);
 
-  // Charger les favoris au démarrage
   useEffect(() => {
     const saved = localStorage.getItem('event-sync-favs');
     if (saved) {
