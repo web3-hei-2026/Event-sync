@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { Star } from 'lucide-react'; // Assure-toi d'avoir lucide-react
 
 export default function Header() {
   const pathname = usePathname();
@@ -10,6 +11,8 @@ export default function Header() {
     { href: '/events', label: 'Événements' },
     { href: '/planning', label: 'Planning' },
     { href: '/speakers', label: 'Intervenants' },
+    // AJOUT DE L'ITINÉRAIRE PERSONNEL
+    { href: '/favorites', label: 'Mon Itinéraire', icon: true },
   ];
 
   return (
@@ -35,8 +38,12 @@ export default function Header() {
                 fontSize: 14, textDecoration: 'none',
                 borderBottom: isActive ? '1px solid #09FBFF' : 'none',
                 paddingBottom: 2,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
               }}
             >
+              {link.icon && <Star size={14} fill={isActive ? "#09FBFF" : "none"} />}
               {link.label}
             </Link>
           );
