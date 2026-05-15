@@ -23,8 +23,44 @@ export default function EventsPage() {
   );
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0a0a1a', color: '#fff' }}>
-      {/* Header Section */}
+    <div style={{ minHeight: '100vh', background: '#0a0a1a', color: '#fff', position: 'relative' }}>
+      
+      {/* VRAIE FLÈCHE - Placée tout en haut à gauche sous le logo sans impacter le layout */}
+      <Link href="/" style={{ 
+        position: 'absolute',
+        top: '24px', 
+        left: '24px',
+        zIndex: 10,
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        width: '40px', 
+        height: '40px', 
+        borderRadius: '50%',
+        border: '1px solid rgba(3,204,255,0.3)',
+        background: 'rgba(3,204,255,0.05)',
+        color: '#03CCFF', 
+        textDecoration: 'none',
+        transition: 'all 0.3s ease',
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = 'rgba(3,204,255,0.15)';
+        e.currentTarget.style.borderColor = '#03CCFF';
+        e.currentTarget.style.boxShadow = '0 0 15px rgba(3,204,255,0.3)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = 'rgba(3,204,255,0.05)';
+        e.currentTarget.style.borderColor = 'rgba(3,204,255,0.3)';
+        e.currentTarget.style.boxShadow = 'none';
+      }}
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+      </Link>
+
+      {/* Header Section - REMIS AU PADDING D'ORIGINE */}
       <section style={{
         padding: '3rem 2rem 2rem', textAlign: 'center',
         position: 'relative', overflow: 'hidden',
@@ -43,13 +79,6 @@ export default function EventsPage() {
         <div style={{ position: 'absolute', width: 200, height: 200, background: '#03CCFF', borderRadius: '50%', filter: 'blur(100px)', opacity: 0.1, bottom: -50, left: '10%', zIndex: 0 }} />
 
         <div style={{ position: 'relative', zIndex: 1 }}>
-          <Link href="/" style={{ 
-            display: 'inline-flex', alignItems: 'center', gap: 6, 
-            color: '#8888aa', textDecoration: 'none', fontSize: 13, 
-            marginBottom: '1rem', transition: 'color 0.2s'
-          }}>
-            ← Retour à l'accueil
-          </Link>
           <h1 style={{ fontFamily: 'var(--font-title)', fontSize: 32, fontWeight: 700, marginBottom: '0.5rem' }}>
             Tous les <span style={{ background: 'linear-gradient(135deg,#D403E1,#03CCFF)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Événements</span>
           </h1>
@@ -80,7 +109,7 @@ export default function EventsPage() {
         </div>
       </section>
 
-      {/* Grid Section */}
+      {/* Grid Section - COMPLÈTEMENT RESTAURÉE À L'ÉTAT INITIAL */}
       <section style={{ padding: '3rem 2rem' }}>
         {loading ? (
           <div style={{ textAlign: 'center', padding: '5rem 0' }}>
@@ -121,10 +150,6 @@ export default function EventsPage() {
       <style>{`
         @keyframes spin {
           to { transform: rotate(360deg); }
-        }
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.3; }
         }
       `}</style>
     </div>

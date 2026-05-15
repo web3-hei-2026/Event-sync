@@ -86,20 +86,31 @@ export default function PlanningPage() {
 
           return (
             <section key={event.id} className="flex flex-col lg:flex-row bg-[#11111d] rounded-[40px] overflow-hidden border border-white/5 items-stretch shadow-2xl">
-              {/* Colonne Date à gauche */}
-              <div className="w-full lg:w-56 flex-shrink-0 bg-gradient-to-b from-[#D403E1] to-[#460071] p-8 flex flex-col items-center justify-center text-center">
-                <div className="text-8xl font-black leading-none font-['Poppins']">{fmtDay(event.startDate)}</div>
-                <span className="text-[18px] font-bold uppercase tracking-[0.5em] mt-2 font-['Poppins']">{fmtMonth(event.startDate)}</span>
-                <div className="w-full border-t border-white/20 mt-8 pt-4">
-                  <p className="text-[11px] font-bold uppercase tracking-widest opacity-90 leading-tight">{event.title}</p>
+              
+              {/* Colonne Date à gauche - RENDUE CLIQUABLE */}
+              <Link 
+                href={`/events/${event.id}`} 
+                className="w-full lg:w-56 flex-shrink-0 bg-gradient-to-b from-[#D403E1] to-[#460071] p-8 flex flex-col items-center justify-center text-center transition-all duration-300 hover:brightness-110 group/date"
+              >
+                <div className="text-8xl font-black leading-none font-['Poppins'] group-hover/date:scale-105 transition-transform">
+                  {fmtDay(event.startDate)}
                 </div>
-              </div>
+                <span className="text-[18px] font-bold uppercase tracking-[0.5em] mt-2 font-['Poppins']">
+                  {fmtMonth(event.startDate)}
+                </span>
+                <div className="w-full border-t border-white/20 mt-8 pt-4">
+                  <p className="text-[11px] font-bold uppercase tracking-widest opacity-90 leading-tight">
+                    {event.title}
+                  </p>
+                  <span className="text-[9px] mt-2 inline-block opacity-50 font-bold tracking-tighter">VOIR L'ÉVÉNEMENT</span>
+                </div>
+              </Link>
 
               {/* Liste des créneaux horaires */}
               <div className="flex-1 bg-[#0a0a1a]/40 divide-y divide-white/5">
                 {Object.entries(grouped).map(([timeRange, slots]) => (
                   <div key={timeRange} className="flex flex-col sm:flex-row items-stretch min-h-[180px]">
-                    {/* HEURE AVEC ICÔNE CLOCK */}
+                    
                     <div className="w-full sm:w-48 flex-shrink-0 flex items-start justify-center border-r border-white/5 bg-black/5 pt-10">
                       <span className="text-[#03CCFF] font-bold text-[13px] bg-white/5 px-4 py-2 rounded-xl border border-white/10 flex items-center gap-2">
                         <Clock size={14} className="text-[#03CCFF]" /> 
@@ -107,7 +118,6 @@ export default function PlanningPage() {
                       </span>
                     </div>
 
-                    {/* Grille des sessions pour ce créneau */}
                     <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4">
                       {slots.map((s: any) => {
                         const live = isSessionLive(s.startTime, s.endTime);
@@ -117,7 +127,6 @@ export default function PlanningPage() {
                           <Link key={s.id} href={`/sessions/${s.id}`} className="relative bg-white/[0.03] rounded-[28px] hover:bg-white/[0.07] hover:scale-[1.02] transition-all flex flex-col p-5 group border border-white/5">
                             {live && <div className="absolute top-3 right-3"><LiveBadge /></div>}
 
-                            {/* Étoile Jaune de favoris */}
                             <button
                               onClick={(e) => handleToggleFav(e, s.id)}
                               className={`absolute bottom-4 right-4 w-9 h-9 flex items-center justify-center rounded-full border transition-all duration-300 hover:scale-110 z-10 ${
@@ -133,12 +142,10 @@ export default function PlanningPage() {
                               </h3>
                               
                               <div className="flex flex-col gap-2">
-                                {/* Salle */}
                                 <span className="text-[#03CCFF] text-[10px] font-extrabold uppercase tracking-widest flex items-center gap-1.5">
                                   <MapPin size={12} className="text-[#D403E1]" /> {s.room?.name || 'SALLE'}
                                 </span>
                                 
-                                {/* Intervenants (bien alignés sous la salle) */}
                                 <div className="flex items-start gap-2 text-[12px] text-slate-400 italic leading-snug">
                                   <User size={12} className="shrink-0 mt-0.5 text-white/30" />
                                   <span className="break-words">
