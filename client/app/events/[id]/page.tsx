@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getEvent } from "../../../lib/api";
 import SessionCard from "../../../src/components/SessionCard";
+import { Calendar, MapPin, ChevronLeft } from "lucide-react";
 
 interface Props { params: Promise<{ id: string }> }
 
@@ -42,7 +43,7 @@ export default async function EventPage({ params }: Props) {
 
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a1a', color: '#fff', padding: '2rem' }}>
-      {/* Back link */}
+      {/* Back link avec icône Chevron */}
       <Link
         href="/events"
         style={{
@@ -51,17 +52,18 @@ export default async function EventPage({ params }: Props) {
           marginBottom: '2rem', transition: 'color 0.2s'
         }}
       >
-        ← Tous les événements
+        <ChevronLeft size={16} />
+        Tous les événements
       </Link>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
         {/* Hero Section */}
         <div style={{ 
-          position: 'relative', padding: '3rem', borderRadius: 20, 
-          background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(3,204,255,0.1)',
+          position: 'relative', padding: '3rem', borderRadius: 32, 
+          background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)',
           overflow: 'hidden'
         }}>
-          {/* Orbs */}
+          {/* Orbs décoratives */}
           <div style={{ position: 'absolute', width: 150, height: 150, background: '#D403E1', borderRadius: '50%', filter: 'blur(80px)', opacity: 0.08, top: -40, left: -40 }} />
           <div style={{ position: 'absolute', width: 150, height: 150, background: '#03CCFF', borderRadius: '50%', filter: 'blur(80px)', opacity: 0.08, bottom: -40, right: -40 }} />
 
@@ -69,18 +71,24 @@ export default async function EventPage({ params }: Props) {
             <h1 style={{ fontFamily: 'var(--font-title)', fontSize: 32, fontWeight: 700, marginBottom: '1rem' }}>
               {event.title}
             </h1>
+            
             {event.description && (
               <p style={{ fontSize: 15, color: '#8888aa', maxWidth: 600, lineHeight: 1.6, marginBottom: '1.5rem' }}>
                 {event.description}
               </p>
             )}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', fontSize: 13, color: '#09FBFF' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                📅 {fmt(event.startDate)} → {fmt(event.endDate)}
+
+            {/* Infos avec icônes Lucide au lieu des émojis */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem', fontSize: 13, color: '#03CCFF', fontWeight: 500 }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                 <Calendar size={16} style={{ color: '#D403E1' }} />
+                 {fmt(event.startDate)} → {fmt(event.endDate)}
               </span>
+              
               {event.location && (
-                <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  📍 {event.location}
+                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <MapPin size={16} style={{ color: '#03CCFF' }} />
+                  {event.location}
                 </span>
               )}
             </div>
@@ -89,19 +97,21 @@ export default async function EventPage({ params }: Props) {
 
         {/* Sessions Section */}
         <div>
-          <h2 style={{ fontFamily: 'var(--font-title)', fontSize: 20, fontWeight: 700, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: 10 }}>
-            Sessions 
-            <span style={{ fontSize: 12, background: 'rgba(212,3,225,0.1)', color: '#D403E1', padding: '2px 10px', borderRadius: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: '1.5rem' }}>
+            <h2 style={{ fontFamily: 'var(--font-title)', fontSize: 20, fontWeight: 700 }}>
+              Sessions 
+            </h2>
+            <span style={{ fontSize: 12, fontWeight: 'bold', background: 'rgba(212,3,225,0.1)', color: '#D403E1', padding: '2px 10px', borderRadius: 10 }}>
               {event.sessions.length}
             </span>
-          </h2>
+          </div>
           
           {event.sessions.length === 0 ? (
-            <div style={{ padding: '3rem', textAlign: 'center', background: 'rgba(255,255,255,0.01)', borderRadius: 15, border: '1px dashed rgba(255,255,255,0.1)' }}>
+            <div style={{ padding: '3rem', textAlign: 'center', background: 'rgba(255,255,255,0.01)', borderRadius: 24, border: '1px dashed rgba(255,255,255,0.1)' }}>
               <p style={{ color: '#6666aa', fontSize: 14 }}>Aucune session planifiée pour cet événement.</p>
             </div>
           ) : (
-            <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))' }}>
+            <div style={{ display: 'grid', gap: '1.5rem', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))' }}>
               {event.sessions.map((session: any) => (
                 <SessionCard key={session.id} session={session} now={now} />
               ))}

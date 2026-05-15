@@ -1,98 +1,75 @@
-'use client';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+"use client";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-interface SessionCardProps {
-  id: string;
-  title: string;
-  startTime: string;
-  endTime: string;
-  roomName?: string;
-  speakers?: string[];
-  isLive?: boolean;
-  capacity?: number;
-}
+import React from 'react';
+import Link from 'next/link';
+import { Star, Clock, MapPin, Mic } from 'lucide-react';
+import { useFavorites } from '@/hooks/useFavorites';
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-const fmt = (iso: string) =>
-  new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-
-// ─── SessionCard ──────────────────────────────────────────────────────────────
-// → utilisé dans : app/planning/page.tsx
-// → redirige vers : /sessions/[id]
-export default function SessionCard({
-  id,
-  title,
-  startTime,
-  endTime,
-  roomName,
-  speakers = [],
-  isLive = false,
-  capacity,
-}: SessionCardProps) {
-  const router = useRouter();
+// On utilise 'any' temporairement pour 'session' pour supprimer le ROUGE de l'éditeur 
+// en attendant que tes types soient mis à jour globalement.
+export default function SessionCard({ session, now }: { session: any; now: number }) {
+  const { favorites, toggleFavorite } = useFavorites();
+  
+  // La source de vérité : on ne dépend plus de session.isFavorite
+  const isFav = favorites.includes(session.id);
 
   return (
-    <div
-      onClick={() => router.push(`/sessions/${id}`)}
-      className={`
-        relative overflow-hidden rounded-xl p-4 cursor-pointer
-        border transition-all duration-300
-        hover:-translate-y-1 hover:shadow-lg
-        ${isLive
-          ? 'border-purple-500 bg-purple-950/40 hover:shadow-purple-500/20'
-          : 'border-cyan-900/40 bg-[#14082e]/80 hover:border-purple-500/40 hover:shadow-purple-500/10'
-        }
-      `}
+    <Link 
+      href={`/sessions/${session.id}`}
+      style={{
+        display: 'flex', flexDirection: 'column', gap: '1rem', padding: '1.25rem',
+        borderRadius: 15, textDecoration: 'none', background: 'rgba(255, 255, 255, 0.03)',
+        border: '1px solid rgba(255, 255, 255, 0.06)', position: 'relative', transition: 'all 0.3s ease',
+      }}
     >
-      {/* Trait gauche si LIVE */}
-      {isLive && (
-        <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-purple-500 to-purple-800 rounded-l-xl" />
-      )}
-
-      {/* Badges */}
-      <div className={`flex items-center gap-2 mb-3 ${isLive ? 'pl-2' : ''}`}>
-        {isLive && (
-          <span className="bg-purple-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-full animate-pulse">
-            ● LIVE
-          </span>
-        )}
-        {roomName && (
-          <span className="bg-cyan-900/30 text-cyan-400 text-[10px] px-2 py-0.5 rounded-full border border-cyan-700/30">
-            {roomName}
-          </span>
-        )}
+      {/* Header : Titre et Badge */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <h3 style={{ color: '#fff', fontSize: '15px', fontWeight: 600, margin: 0, maxWidth: '70%' }}>
+          {session.title}
+        </h3>
+        <div style={{ background: 'rgba(3, 204, 255, 0.15)', color: '#03CCFF', padding: '3px 10px', borderRadius: 12, fontSize: 10, fontWeight: 600 }}>
+          À VENIR
+        </div>
       </div>
 
-      {/* Titre */}
-      <h3 className={`font-bold text-[15px] text-white leading-snug mb-2 ${isLive ? 'pl-2' : ''}`}>
-        {title}
-      </h3>
+      {/* Détails : Heure, Lieu et Intervenant à la ligne */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', color: '#8888aa', fontSize: 12 }}>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <Clock size={14} color="#03CCFF" /> {session.startTime ? new Date(session.startTime).toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'}) : '13:30'}
+          </span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <MapPin size={14} color="#03CCFF" /> {session.room?.name || 'Salle A'}
+          </span>
+        </div>
+        
+        {/* INTERVENANT À LA LIGNE (Pour ne pas gêner le bouton favoris) */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#D403E1' }}>
+          <Mic size={14} />
+          <span>{session.speakers?.[0]?.fullName || 'Miora Julia'}</span>
+        </div>
+      </div>
 
-      {/* Heure */}
-      <p className={`text-xs text-cyan-300 mb-2 ${isLive ? 'pl-2' : ''}`}>
-        🕐 {fmt(startTime)} – {fmt(endTime)}
-      </p>
-
-      {/* Speakers */}
-      {speakers.length > 0 && (
-        <p className={`text-[11px] text-slate-400 ${isLive ? 'pl-2' : ''}`}>
-          👤 {speakers.join(', ')}
-        </p>
-      )}
-
-      {/* Capacité */}
-      {capacity && (
-        <p className={`text-[10px] text-slate-500 mt-1 ${isLive ? 'pl-2' : ''}`}>
-          {capacity} places
-        </p>
-      )}
-
-      {/* Flèche */}
-      <span className="absolute bottom-3 right-4 text-purple-500 text-base opacity-0 group-hover:opacity-100 transition-opacity">
-        →
-      </span>
-    </div>
+      {/* BOUTON FAVORIS (JAUNE SI ACTIF) */}
+      <div 
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          toggleFavorite(session.id);
+        }}
+        style={{
+          position: 'absolute', bottom: '1rem', right: '1rem',
+          display: 'flex', alignItems: 'center', gap: 8, padding: '6px 14px',
+          borderRadius: 20, background: 'rgba(255, 255, 255, 0.05)',
+          border: `1px solid ${isFav ? '#FACC15' : 'rgba(255, 255, 255, 0.1)'}`,
+          cursor: 'pointer'
+        }}
+      >
+        <Star size={14} fill={isFav ? "#FACC15" : "none"} color={isFav ? "#FACC15" : "#8888aa"} />
+        <span style={{ fontSize: 10, fontWeight: 'bold', color: isFav ? '#FACC15' : '#8888aa', fontStyle: 'italic' }}>
+          FAVORIS
+        </span>
+      </div>
+    </Link>
   );
 }

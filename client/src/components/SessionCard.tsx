@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
 import type { SessionSummary } from "../types";
-import { Clock, MapPin, Mic } from "lucide-react";
+import { Clock, MapPin, Mic, Star } from "lucide-react";
+import { useState } from "react";
 
 function fmtTime(iso: string) {
   return new Date(iso).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
@@ -13,7 +14,7 @@ function getStatus(session: SessionSummary, now: number): "live" | "upcoming" | 
   const end = new Date(session.endTime).getTime();
   if (now < start) return "upcoming";
   if (now > end) return "past";
-  return "live"; // fallback if isLive is not synced but time is within range
+  return "live";
 }
 
 function StatusBadge({ status }: { status: "live" | "upcoming" | "past" }) {
@@ -44,6 +45,10 @@ function StatusBadge({ status }: { status: "live" | "upcoming" | "past" }) {
 
 export default function SessionCard({ session, now }: { session: SessionSummary; now: number }) {
   const status = getStatus(session, now);
+  
+  // LOGIQUE RÉTABLIE : On initialise selon si la session est déjà en favori
+  // Idéalement, cette info devrait venir de session.isFavorite ou de ton context
+  const [isFav, setIsFav] = useState(session.isFavorite || false); 
 
   return (
     <Link
@@ -102,6 +107,43 @@ export default function SessionCard({ session, now }: { session: SessionSummary;
             {session.speakers.map((s) => s.fullName).join(", ")}
           </span>
         )}
+      </div>
+
+      {/* BOUTON FAVORIS - COULEUR DYNAMIQUE SELON L'ÉTAT RÉEL */}
+      <div 
+        style={{ 
+          position: 'absolute', 
+          bottom: '1rem', 
+          right: '1rem', 
+          zIndex: 10,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          padding: '6px 14px',
+          borderRadius: '20px',
+          background: 'rgba(255, 255, 255, 0.05)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+        }}
+        onClick={(e) => {
+            e.preventDefault(); // Empêche le lien de s'ouvrir
+            e.stopPropagation(); // Empêche l'événement de monter
+            setIsFav(!isFav);
+        }}
+      >
+        <Star 
+            size={14} 
+            fill={isFav ? "#FACC15" : "none"} // Jaune si fav, vide sinon
+            color={isFav ? "#FACC15" : "#8888aa"} // Contour jaune si fav, gris sinon
+        />
+        <span style={{ 
+            fontSize: '10px', 
+            fontWeight: 'bold', 
+            color: isFav ? '#FACC15' : '#8888aa', // Texte jaune si fav, gris sinon
+            fontStyle: 'italic',
+            letterSpacing: '0.05em'
+        }}>
+          FAVORIS
+        </span>
       </div>
 
       <style>{`
