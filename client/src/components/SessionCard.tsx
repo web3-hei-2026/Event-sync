@@ -137,7 +137,8 @@ export default function SessionCard({ session, now }: { session: SessionSummary;
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: '2px' }}>
             <Mic size={14} color="#D403E1" />
             <span style={{ lineHeight: 1.3 }}>
-              {session.speakers.map((s) => s.fullName).join(", ")}
+              {/* ✅ CORRECTION ICI : On descend chercher le fullName dans l'objet imbriqué speaker */}
+              {session.speakers.map((s: any) => s.speaker?.fullName || s.fullName).filter(Boolean).join(", ")}
             </span>
           </div>
         )}

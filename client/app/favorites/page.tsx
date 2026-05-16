@@ -35,8 +35,13 @@ export default function FavoritesPage() {
 
   async function loadData() {
     const stored = localStorage.getItem(FAV_KEY);
-    // FORCE la conversion de chaque ID en chaîne de caractères (string) pour l'API
-    const ids: string[] = stored ? JSON.parse(stored).map((id: any) => String(id)) : [];
+    
+    const ids: string[] = stored 
+      ? JSON.parse(stored)
+          .map((id: any) => id ? String(id) : '')
+          .filter((id: string) => id !== '' && id !== 'null')
+      : [];
+      
     setFavIds(ids);
 
     if (ids.length === 0) {
@@ -46,7 +51,6 @@ export default function FavoritesPage() {
     }
 
     try {
-      // On filtre les requêtes pour ignorer celles qui échouent (évite de crash toute la page)
       const requests = ids.map(async (id) => {
         try {
           return await getSession(id);
@@ -57,7 +61,6 @@ export default function FavoritesPage() {
       });
 
       const results = await Promise.all(requests);
-      // On garde uniquement les sessions valides renvoyées par le serveur
       const validSessions = results.filter((s): s is Session => s !== null);
 
       validSessions.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
@@ -65,8 +68,12 @@ export default function FavoritesPage() {
     } catch (err) {
       console.error('Erreur globale lors du chargement des favoris', err);
     } finally {
-      setLoading(false);
+      wlLoading(false);
     }
+  }
+
+  function wlLoading(val: boolean) {
+    setLoading(val);
   }
 
   useEffect(() => {
@@ -130,25 +137,35 @@ export default function FavoritesPage() {
               return (
                 <div key={session.id} className="relative group">
                   <Link href={`/sessions/${session.id}`} className={`
-                    flex flex-col md:flex-row md:items-center gap-6 p-6 rounded-[32px] border transition-all duration-300
-                    ${live ? 'border-[#D403E1]/50 bg-[#D403E1]/5' : 'border-white/5 bg-white/[0.03] hover:bg-white/[0.06] hover:border-white/10'}
+                    flex flex-col md:flex-row md:items-center gap-6 p-6 rounded-[32px] border transition-all duration-300 pr-16
+                    ${live ? 'border-red-500/40 bg-red-500/[0.02] shadow-[0_0_15px_rgba(239,68,68,0.05)]' : 'border-white/5 bg-white/[0.03] hover:bg-white/[0.06] hover:border-white/10'}
                   `}>
                     
                     {/* Colonne Temps */}
-                    <div className="md:w-32 flex-shrink-0">
-                      <div className={`text-lg font-bold ${live ? 'text-[#D403E1]' : 'text-[#03CCFF]'}`}>
-                        {fmtTime(session.startTime)}
+                    <div className="md:w-36 flex-shrink-0">
+                      <div className={`text-base font-bold flex items-center gap-1.5 ${live ? 'text-red-400' : 'text-[#03CCFF]'}`}>
+                        <Clock size={14} className="opacity-70" />
+                        {fmtTime(session.startTime)} — {fmtTime(session.endTime)}
                       </div>
-                      <div className="text-[10px] text-slate-500 uppercase tracking-widest">
+                      <div className="text-[10px] text-slate-500 uppercase tracking-widest mt-0.5">
                         {fmtDate(session.startTime)}
                       </div>
                     </div>
 
                     {/* Colonne Contenu */}
                     <div className="flex-1">
-                      <h3 className="font-bold text-xl group-hover:text-[#03CCFF] transition-colors mb-2">
-                        {session.title}
-                      </h3>
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
+                        <h3 className="font-bold text-xl group-hover:text-[#03CCFF] transition-colors">
+                          {session.title}
+                        </h3>
+                        {/* ✅ Badge Rouge LIVE clignotant */}
+                        {live && (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-red-500/10 text-red-500 border border-red-500/20 animate-pulse uppercase tracking-wider">
+                            <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                            Live
+                          </span>
+                        )}
+                      </div>
 
                       <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-slate-400">
                         <span className="flex items-center gap-2">
@@ -165,10 +182,11 @@ export default function FavoritesPage() {
                       </div>
                     </div>
 
-                    {/* Action Supprimer */}
+                    {/* Action Supprimer (Rendu persistant pour une meilleure UX globale) */}
                     <button
                       onClick={(e) => removeFav(e, session.id)}
-                      className="absolute top-6 right-6 md:static w-10 h-10 flex items-center justify-center rounded-full bg-red-500/10 text-red-500 opacity-0 group-hover:opacity-100 transition-all hover:bg-red-500 hover:text-white"
+                      className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-full bg-white/5 text-slate-400 transition-all hover:bg-red-500/20 hover:text-red-400 target-button"
+                      title="Retirer de l'itinéraire"
                     >
                       <X size={18} />
                     </button>

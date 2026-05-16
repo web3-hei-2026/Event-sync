@@ -50,22 +50,24 @@ export default function SessionFavoriteButton({ sessionId }: { sessionId: string
       style={{
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: '8px', borderRadius: '8px',
-        background: isFav ? 'rgba(212, 3, 225, 0.15)' : 'rgba(255, 255, 255, 0.05)',
-        border: `1px solid ${isFav ? '#D403E1' : 'rgba(255, 255, 255, 0.1)'}`,
+        // ✅ Changé pour un fond jaune d'or transparent si favori
+        background: isFav ? 'rgba(255, 215, 0, 0.15)' : 'rgba(255, 255, 255, 0.05)',
+        border: `1px solid ${isFav ? '#FFD700' : 'rgba(255, 255, 255, 0.1)'}`,
         cursor: 'pointer', transition: 'all 0.2s', width: 36, height: 36
       }}
       onMouseEnter={(e) => {
         (e.currentTarget as HTMLElement).style.background = isFav
-          ? 'rgba(212, 3, 225, 0.25)'
+          ? 'rgba(255, 215, 0, 0.25)'
           : 'rgba(255, 255, 255, 0.1)';
       }}
       onMouseLeave={(e) => {
         (e.currentTarget as HTMLElement).style.background = isFav
-          ? 'rgba(212, 3, 225, 0.15)'
+          ? 'rgba(255, 215, 0, 0.15)'
           : 'rgba(255, 255, 255, 0.05)';
       }}
     >
-      <Star size={18} fill={isFav ? "#D403E1" : "none"} color={isFav ? "#D403E1" : "#8888aa"} />
+      {/* ✅ Remplissage et bordure de l'étoile changés en Jaune d'or (#FFD700) */}
+      <Star size={18} fill={isFav ? "#FFD700" : "none"} color={isFav ? "#FFD700" : "#8888aa"} />
     </button>
   );
 }
