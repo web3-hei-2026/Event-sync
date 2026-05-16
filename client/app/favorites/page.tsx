@@ -11,12 +11,11 @@ interface Session {
   startTime: string;
   endTime: string;
   room?: { name: string };
-  // Structure précise selon ton interface
   speakers?: { speaker: { fullName: string } }[];
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-const FAV_KEY = 'eventsync_favorites';
+const FAV_KEY = 'event-sync-favs';
 
 const fmtTime = (iso: string) =>
   new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
@@ -34,36 +33,62 @@ export default function FavoritesPage() {
   const [loading, setLoading] = useState(true);
   const [favIds, setFavIds] = useState<string[]>([]);
 
-  useEffect(() => {
-    async function load() {
-      const stored = localStorage.getItem(FAV_KEY);
-      const ids: string[] = stored ? JSON.parse(stored) : [];
-      setFavIds(ids);
+  async function loadData() {
+    const stored = localStorage.getItem(FAV_KEY);
+    // FORCE la conversion de chaque ID en chaîne de caractères (string) pour l'API
+    const ids: string[] = stored ? JSON.parse(stored).map((id: any) => String(id)) : [];
+    setFavIds(ids);
 
-      if (ids.length === 0) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const results = await Promise.all(ids.map(id => getSession(id)));
-        results.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
-        setSessions(results);
-      } catch (err) {
-        console.error('Erreur chargement favoris', err);
-      } finally {
-        setLoading(false);
-      }
+    if (ids.length === 0) {
+      setSessions([]);
+      setLoading(false);
+      return;
     }
-    load();
+
+    try {
+      // On filtre les requêtes pour ignorer celles qui échouent (évite de crash toute la page)
+      const requests = ids.map(async (id) => {
+        try {
+          return await getSession(id);
+        } catch (fetchErr) {
+          console.error(`Impossible de récupérer la session ${id}:`, fetchErr);
+          return null;
+        }
+      });
+
+      const results = await Promise.all(requests);
+      // On garde uniquement les sessions valides renvoyées par le serveur
+      const validSessions = results.filter((s): s is Session => s !== null);
+
+      validSessions.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+      setSessions(validSessions);
+    } catch (err) {
+      console.error('Erreur globale lors du chargement des favoris', err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadData();
+
+    window.addEventListener('favorites-updated', loadData);
+    window.addEventListener('storage', loadData);
+
+    return () => {
+      window.removeEventListener('favorites-updated', loadData);
+      window.removeEventListener('storage', loadData);
+    };
   }, []);
 
   const removeFav = (e: React.MouseEvent, id: string) => {
     e.preventDefault();
-    const updated = favIds.filter(f => f !== id);
+    const updated = favIds.filter(f => f !== String(id));
     localStorage.setItem(FAV_KEY, JSON.stringify(updated));
     setFavIds(updated);
-    setSessions(prev => prev.filter(s => s.id !== id));
+    setSessions(prev => prev.filter(s => String(s.id) !== String(id)));
+
+    window.dispatchEvent(new Event('favorites-updated'));
   };
 
   return (
@@ -97,7 +122,6 @@ export default function FavoritesPage() {
             {sessions.map((session) => {
               const live = isCurrentlyLive(session.startTime, session.endTime);
               
-              // Extraction correcte des noms des intervenants
               const speakerNames = session.speakers
                 ?.map(s => s.speaker?.fullName)
                 .filter(Boolean)
@@ -127,13 +151,11 @@ export default function FavoritesPage() {
                       </h3>
 
                       <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-slate-400">
-                        {/* Salle */}
                         <span className="flex items-center gap-2">
                           <MapPin size={14} className="text-[#03CCFF]" /> 
                           {session.room?.name || 'Salle à définir'}
                         </span>
 
-                        {/* Intervenants (Alignés à la salle) */}
                         {speakerNames && (
                           <span className="flex items-center gap-2 text-[#D403E1] font-medium">
                              <Mic size={14} /> 

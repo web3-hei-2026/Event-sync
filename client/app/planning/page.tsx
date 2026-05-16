@@ -24,7 +24,8 @@ const isSessionLive = (start: string, end: string) => {
   return now >= new Date(start) && now <= new Date(end);
 };
 
-const FAV_KEY = 'eventsync_favorites';
+// ✅ Clé unifiée — même dans SessionCard, SessionFavoriteButton et favorites/page.tsx
+const FAV_KEY = 'event-sync-favs';
 
 function getFavs(): string[] {
   if (typeof window === 'undefined') return [];
@@ -36,6 +37,7 @@ function toggleFav(id: string): boolean {
   const isFav = favs.includes(id);
   const updated = isFav ? favs.filter(f => f !== id) : [...favs, id];
   localStorage.setItem(FAV_KEY, JSON.stringify(updated));
+  window.dispatchEvent(new Event('favorites-updated'));
   return !isFav;
 }
 
@@ -45,6 +47,17 @@ export default function PlanningPage() {
   const [favs, setFavs]             = useState<string[]>([]);
 
   useEffect(() => { setFavs(getFavs()); }, []);
+
+  // Sync si modifié depuis une autre page
+  useEffect(() => {
+    const handleSync = () => setFavs(getFavs());
+    window.addEventListener('favorites-updated', handleSync);
+    window.addEventListener('storage', handleSync);
+    return () => {
+      window.removeEventListener('favorites-updated', handleSync);
+      window.removeEventListener('storage', handleSync);
+    };
+  }, []);
 
   const handleToggleFav = (e: React.MouseEvent, id: string) => {
     e.preventDefault();
@@ -65,7 +78,11 @@ export default function PlanningPage() {
     load();
   }, []);
 
-  if (loading) return <div className="min-h-screen bg-[#0a0a1a] flex items-center justify-center text-white italic font-['Poppins']">Chargement de ton planning...</div>;
+  if (loading) return (
+    <div className="min-h-screen bg-[#0a0a1a] flex items-center justify-center text-white italic font-['Poppins']">
+      Chargement de ton planning...
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-[#0a0a1a] text-white py-10 px-4 flex flex-col items-center">
@@ -86,10 +103,10 @@ export default function PlanningPage() {
 
           return (
             <section key={event.id} className="flex flex-col lg:flex-row bg-[#11111d] rounded-[40px] overflow-hidden border border-white/5 items-stretch shadow-2xl">
-              
-              {/* Colonne Date à gauche - RENDUE CLIQUABLE */}
-              <Link 
-                href={`/events/${event.id}`} 
+
+              {/* Colonne Date */}
+              <Link
+                href={`/events/${event.id}`}
                 className="w-full lg:w-56 flex-shrink-0 bg-gradient-to-b from-[#D403E1] to-[#460071] p-8 flex flex-col items-center justify-center text-center transition-all duration-300 hover:brightness-110 group/date"
               >
                 <div className="text-8xl font-black leading-none font-['Poppins'] group-hover/date:scale-105 transition-transform">
@@ -102,50 +119,68 @@ export default function PlanningPage() {
                   <p className="text-[11px] font-bold uppercase tracking-widest opacity-90 leading-tight">
                     {event.title}
                   </p>
-                  <span className="text-[9px] mt-2 inline-block opacity-50 font-bold tracking-tighter">VOIR L'ÉVÉNEMENT</span>
+                  <span className="text-[9px] mt-2 inline-block opacity-50 font-bold tracking-tighter">
+                    VOIR L'ÉVÉNEMENT
+                  </span>
                 </div>
               </Link>
 
-              {/* Liste des créneaux horaires */}
+              {/* Sessions */}
               <div className="flex-1 bg-[#0a0a1a]/40 divide-y divide-white/5">
                 {Object.entries(grouped).map(([timeRange, slots]) => (
                   <div key={timeRange} className="flex flex-col sm:flex-row items-stretch min-h-[180px]">
-                    
+
+                    {/* Heure */}
                     <div className="w-full sm:w-48 flex-shrink-0 flex items-start justify-center border-r border-white/5 bg-black/5 pt-10">
                       <span className="text-[#03CCFF] font-bold text-[13px] bg-white/5 px-4 py-2 rounded-xl border border-white/10 flex items-center gap-2">
-                        <Clock size={14} className="text-[#03CCFF]" /> 
+                        <Clock size={14} className="text-[#03CCFF]" />
                         {timeRange}
                       </span>
                     </div>
 
+                    {/* Grille sessions */}
                     <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4">
                       {slots.map((s: any) => {
-                        const live = isSessionLive(s.startTime, s.endTime);
+                        const live  = isSessionLive(s.startTime, s.endTime);
                         const isFav = favs.includes(s.id);
 
                         return (
-                          <Link key={s.id} href={`/sessions/${s.id}`} className="relative bg-white/[0.03] rounded-[28px] hover:bg-white/[0.07] hover:scale-[1.02] transition-all flex flex-col p-5 group border border-white/5">
-                            {live && <div className="absolute top-3 right-3"><LiveBadge /></div>}
+                          <Link
+                            key={s.id}
+                            href={`/sessions/${s.id}`}
+                            className="relative bg-white/[0.03] rounded-[28px] hover:bg-white/[0.07] hover:scale-[1.02] transition-all flex flex-col p-5 group border border-white/5"
+                          >
+                            {live && (
+                              <div className="absolute top-3 right-3">
+                                <LiveBadge />
+                              </div>
+                            )}
 
+                            {/* Bouton favori */}
                             <button
                               onClick={(e) => handleToggleFav(e, s.id)}
                               className={`absolute bottom-4 right-4 w-9 h-9 flex items-center justify-center rounded-full border transition-all duration-300 hover:scale-110 z-10 ${
-                                isFav ? 'bg-yellow-400/20 border-yellow-400/60 text-[#FACC15]' : 'bg-white/5 border-white/10 text-white/20'
+                                isFav
+                                  ? 'bg-yellow-400/20 border-yellow-400/60 text-[#FACC15]'
+                                  : 'bg-white/5 border-white/10 text-white/20'
                               }`}
                             >
-                              <Star size={18} fill={isFav ? "#FACC15" : "none"} stroke={isFav ? "#FACC15" : "currentColor"} />
+                              <Star
+                                size={18}
+                                fill={isFav ? "#FACC15" : "none"}
+                                stroke={isFav ? "#FACC15" : "currentColor"}
+                              />
                             </button>
 
                             <div className="flex flex-col gap-3 pr-10">
                               <h3 className="font-bold text-[15px] leading-tight text-white uppercase font-['Poppins'] group-hover:text-[#03CCFF] transition-colors">
                                 {s.title}
                               </h3>
-                              
                               <div className="flex flex-col gap-2">
                                 <span className="text-[#03CCFF] text-[10px] font-extrabold uppercase tracking-widest flex items-center gap-1.5">
-                                  <MapPin size={12} className="text-[#D403E1]" /> {s.room?.name || 'SALLE'}
+                                  <MapPin size={12} className="text-[#D403E1]" />
+                                  {s.room?.name || 'SALLE'}
                                 </span>
-                                
                                 <div className="flex items-start gap-2 text-[12px] text-slate-400 italic leading-snug">
                                   <User size={12} className="shrink-0 mt-0.5 text-white/30" />
                                   <span className="break-words">
@@ -158,6 +193,7 @@ export default function PlanningPage() {
                         );
                       })}
                     </div>
+
                   </div>
                 ))}
               </div>

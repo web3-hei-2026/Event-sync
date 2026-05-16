@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getSession } from "../../../lib/api";
 import QuestionList from "../../../src/components/QuestionList";
+import SessionFavoriteButton from "../../../src/components/SessionFavoriteButton";
 import { ArrowLeft, Clock, MapPin, Users, Mic, MessageSquare } from "lucide-react";
 
 interface Props { params: Promise<{ id: string }> }
@@ -65,29 +66,32 @@ export default async function SessionPage({ params }: Props) {
           <div style={{ position: 'absolute', width: 150, height: 150, background: '#03CCFF', borderRadius: '50%', filter: 'blur(80px)', opacity: 0.1, bottom: -40, left: -40 }} />
 
           <div style={{ position: 'relative', zIndex: 1 }}>
-            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-              <h1 style={{ fontFamily: 'var(--font-title)', fontSize: 32, fontWeight: 700, margin: 0 }}>
-                {session.title}
-              </h1>
-              {session.isLive ? (
-                <span style={{ 
-                  display: 'flex', alignItems: 'center', gap: 6, 
-                  fontSize: 11, fontWeight: 600, padding: '4px 12px', borderRadius: 12,
-                  background: 'rgba(255,50,50,0.15)', color: '#ff6060', border: '1px solid rgba(255,50,50,0.3)',
-                  textTransform: 'uppercase', letterSpacing: '0.02em'
-                }}>
-                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#ff4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />
-                  En direct
-                </span>
-              ) : (
-                <span style={{ 
-                  fontSize: 11, fontWeight: 600, padding: '4px 12px', borderRadius: 12,
-                  background: 'rgba(100,100,100,0.15)', color: '#888', border: '1px solid rgba(100,100,100,0.3)',
-                  textTransform: 'uppercase'
-                }}>
-                  {Date.now() < new Date(session.startTime).getTime() ? "À venir" : "Terminée"}
-                </span>
-              )}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', marginBottom: '1rem' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '1rem', flex: 1 }}>
+                <h1 style={{ fontFamily: 'var(--font-title)', fontSize: 32, fontWeight: 700, margin: 0 }}>
+                  {session.title}
+                </h1>
+                {session.isLive ? (
+                  <span style={{ 
+                    display: 'flex', alignItems: 'center', gap: 6, 
+                    fontSize: 11, fontWeight: 600, padding: '4px 12px', borderRadius: 12,
+                    background: 'rgba(255,50,50,0.15)', color: '#ff6060', border: '1px solid rgba(255,50,50,0.3)',
+                    textTransform: 'uppercase', letterSpacing: '0.02em'
+                  }}>
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#ff4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />
+                    En direct
+                  </span>
+                ) : (
+                  <span style={{ 
+                    fontSize: 11, fontWeight: 600, padding: '4px 12px', borderRadius: 12,
+                    background: 'rgba(100,100,100,0.15)', color: '#888', border: '1px solid rgba(100,100,100,0.3)',
+                    textTransform: 'uppercase'
+                  }}>
+                    {Date.now() < new Date(session.startTime).getTime() ? "À venir" : "Terminée"}
+                  </span>
+                )}
+              </div>
+              <SessionFavoriteButton sessionId={session.id} />
             </div>
 
             {session.description && (
