@@ -35,11 +35,18 @@ function StatusBadge({ startTime, endTime }: { startTime: string; endTime: strin
   );
 }
 
-// ─── HELPERS FORMATAGE ──────────────────────────────────────────────────────
+// ─── HELPERS FORMATAGE SÉCURISÉS EN HEURE LOCALE ─────────────────────────────
 const fmtDay      = (iso: string) => new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit' });
 const fmtMonth    = (iso: string) => new Date(iso).toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '');
 const fmtTime     = (iso: string) => new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
-const fmtLocalDate = (iso: string) => new Date(iso).toISOString().split('T')[0];
+
+// Calcule la clé YYYY-MM-DD basée sur le jour local de la session (évite le décalage UTC)
+const fmtLocalDate = (iso: string) => {
+  const d = new Date(iso);
+  const offset = d.getTimezoneOffset();
+  const localDate = new Date(d.getTime() - (offset * 60 * 1000));
+  return localDate.toISOString().split('T')[0];
+};
 
 const FAV_KEY = 'event-sync-favs';
 
@@ -110,7 +117,6 @@ export default function PlanningPage() {
       <main className="w-full max-w-[1400px] space-y-16">
         {fullEvents.map((event) => {
           
-          // Double regroupement : Par Jour, puis par Créneau Horaire
           const groupedByDay: Record<string, Record<string, any[]>> = {};
 
           (event.sessions ?? []).forEach((s: any) => {
@@ -128,7 +134,7 @@ export default function PlanningPage() {
           return (
             <section key={event.id} className="bg-[#11111d] rounded-[40px] border border-white/5 shadow-2xl overflow-hidden flex flex-col">
               
-              {/* ── BANDEAU DE L'ÉVÉNEMENT (Lien cliquable sur tout le bloc du titre) ── */}
+              {/* ── BANDEAU DE L'ÉVÉNEMENT (Lien direct sans ancre) ── */}
               <Link 
                 href={`/events/${event.id}`}
                 className="w-full bg-gradient-to-r from-[#D403E1] to-[#460071] p-6 md:p-8 flex flex-col sm:flex-row justify-between sm:items-center gap-4 hover:brightness-110 transition-all duration-300 group/title"
@@ -153,9 +159,9 @@ export default function PlanningPage() {
                 {sortedDays.map(([dayIso, timeSlots]) => (
                   <div key={dayIso} className="flex flex-col lg:flex-row items-stretch">
                     
-                    {/* Colonne latérale du Jour (Lien cliquable sur la date) */}
+                    {/* Colonne latérale du Jour (Lien dynamique synchronisé en heure locale) */}
                     <Link
-                      href={`/events/${event.id}`}
+                      href={`/events/${event.id}#day-${dayIso}`}
                       className="w-full lg:w-44 flex-shrink-0 bg-white/[0.01] border-b lg:border-b-0 lg:border-r border-white/5 p-6 flex flex-row lg:flex-col items-center justify-center gap-2 lg:gap-0 text-center min-w-[150px] hover:bg-white/[0.04] transition-all duration-300 group/date"
                     >
                       <div className="text-5xl lg:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-white/60 font-['Poppins'] group-hover/date:scale-105 transition-transform">
@@ -183,8 +189,6 @@ export default function PlanningPage() {
                           <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                             {slots.map((s: any) => {
                               const isFav = favs.includes(s.id);
-                              
-                              // Compilation propre de la liste des intervenants
                               const speakersList = s.speakers?.map((sp: any) => sp.speaker?.fullName ?? sp.fullName).join(', ') || 'Intervenant';
 
                               return (
@@ -194,7 +198,6 @@ export default function PlanningPage() {
                                   className="relative bg-white/[0.02] rounded-[24px] hover:bg-white/[0.06] hover:scale-[1.02] transition-all flex flex-col p-5 group border border-white/5 justify-between min-h-[160px]"
                                 >
                                   <div>
-                                    {/* En-tête de carte avec le Badge */}
                                     <div className="flex justify-between items-start gap-4 mb-3">
                                       <h3 className="font-bold text-[14px] leading-tight text-white uppercase font-['Poppins'] group-hover:text-[#03CCFF] transition-colors line-clamp-2">
                                         {s.title}
@@ -204,7 +207,6 @@ export default function PlanningPage() {
                                       </div>
                                     </div>
 
-                                    {/* Description */}
                                     {s.description && (
                                       <p className="text-[11px] text-slate-400 line-clamp-2 mb-4 leading-relaxed">
                                         {s.description}
@@ -212,20 +214,14 @@ export default function PlanningPage() {
                                     )}
                                   </div>
 
-                                  {/* Informations du bas de carte */}
                                   <div className="flex justify-between items-end mt-2 pt-2 border-t border-white/5 w-full">
-                                    {/* Conteneur infos de gauche bridé en largeur maximale pour éviter que l'étoile bouge */}
                                     <div className="flex flex-col gap-1.5 max-w-[calc(100%-40px)] w-full">
                                       <span className="text-[#03CCFF] text-[9px] font-extrabold uppercase tracking-widest flex items-center gap-1">
                                         <MapPin size={10} className="text-[#D403E1]" />
                                         {s.room?.name || 'SALLE'}
                                       </span>
                                       
-                                      {/* Zone Intervenants Sécurisée contre le débordement */}
-                                      <div 
-                                        className="flex items-center gap-1.5 text-[11px] text-slate-400 italic w-full"
-                                        title={speakersList} // Info-bulle magique au survol de la souris !
-                                      >
+                                      <div className="flex items-center gap-1.5 text-[11px] text-slate-400 italic w-full" title={speakersList}>
                                         <User size={10} className="shrink-0 text-white/30" />
                                         <span className="truncate block w-full">
                                           {speakersList}
@@ -233,7 +229,6 @@ export default function PlanningPage() {
                                       </div>
                                     </div>
 
-                                    {/* Étoile de favori */}
                                     <button
                                       onClick={(e) => handleToggleFav(e, s.id)}
                                       className={`w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-full border transition-all duration-300 hover:scale-110 ${

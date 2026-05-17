@@ -37,21 +37,26 @@ export default async function EventPage({ params }: Props) {
     event = await getEvent(id);
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Événement introuvable.";
+    // Ton bloc d'erreur épuré (ne s'affiche qu'en cas de crash ou mauvais ID)
     return (
       <div style={{ padding: '5rem 2rem', textAlign: 'center', background: '#0a0a1a', color: '#8888aa', minHeight: '100vh' }}>
         <p style={{ marginBottom: '1.5rem' }}>{msg}</p>
-        <Link href="/" style={{ color: '#03CCFF', textDecoration: 'none', border: '1px solid rgba(3,204,255,0.3)', padding: '8px 20px', borderRadius: 20 }}>
-          Retour à l'accueil
+        <Link href="/events" style={{ color: '#03CCFF', textDecoration: 'none', border: '1px solid rgba(3,204,255,0.3)', padding: '8px 20px', borderRadius: 20 }}>
+          Tous les événements
         </Link>
       </div>
     );
   }
 
-  // Regroupement des sessions par date
+  // Regroupement des sessions par date (Sécurisé en Heure Locale)
   const groupedSessions: Record<string, any[]> = {};
 
   (event.sessions ?? []).forEach((session: any) => {
-    const dateKey = new Date(session.startTime).toISOString().split('T')[0];
+    const d = new Date(session.startTime);
+    const offset = d.getTimezoneOffset();
+    const localDate = new Date(d.getTime() - (offset * 60 * 1000));
+    const dateKey = localDate.toISOString().split('T')[0];
+
     if (!groupedSessions[dateKey]) {
       groupedSessions[dateKey] = [];
     }
@@ -63,6 +68,8 @@ export default async function EventPage({ params }: Props) {
 
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a1a', color: '#fff', padding: '2rem' }}>
+      
+      {/* LE VRAI BOUTON VISIBLE : Modifié pour être minimaliste et stylé comme tu aimes */}
       <Link
         href="/events"
         style={{
@@ -133,9 +140,9 @@ export default async function EventPage({ params }: Props) {
                 const sessionsOfDay = groupedSessions[dayKey];
                 
                 return (
-                  <div key={dayKey} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <div key={dayKey} id={`day-${dayKey}`} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', scrollMarginTop: '6rem' }}>
                     
-                    {/* En-tête du groupe de jour */}
+                    {/* En-tête du jour */}
                     <div style={{ 
                       display: 'flex', 
                       alignItems: 'center', 
