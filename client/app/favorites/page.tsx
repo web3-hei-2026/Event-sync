@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { getSession } from '@/lib/api';
 import { Star, X, MapPin, Mic, Clock } from 'lucide-react';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+{/*type*/}
 interface Session {
   id: string;
   title: string;
@@ -14,7 +14,7 @@ interface Session {
   speakers?: { speaker: { fullName: string } }[];
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+{/*helper*/}
 const FAV_KEY = 'event-sync-favs';
 
 const fmtTime = (iso: string) =>
@@ -158,7 +158,7 @@ export default function FavoritesPage() {
                         <h3 className="font-bold text-xl group-hover:text-[#03CCFF] transition-colors">
                           {session.title}
                         </h3>
-                        {/* ✅ Badge Rouge LIVE clignotant */}
+                        {/* Badge Rouge LIVE clignotant */}
                         {live && (
                           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-red-500/10 text-red-500 border border-red-500/20 animate-pulse uppercase tracking-wider">
                             <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
@@ -182,7 +182,7 @@ export default function FavoritesPage() {
                       </div>
                     </div>
 
-                    {/* Action Supprimer (Rendu persistant pour une meilleure UX globale) */}
+                    {/* Action Supprimer */}
                     <button
                       onClick={(e) => removeFav(e, session.id)}
                       className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-full bg-white/5 text-slate-400 transition-all hover:bg-red-500/20 hover:text-red-400 target-button"

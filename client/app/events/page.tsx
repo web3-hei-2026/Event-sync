@@ -25,7 +25,7 @@ export default function EventsPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a1a', color: '#fff', position: 'relative' }}>
       
-      {/* VRAIE FLÈCHE - Placée tout en haut à gauche sous le logo sans impacter le layout */}
+      {/* RETOUR VERS LA PAGE ACCUEIL */}
       <Link href="/" style={{ 
         position: 'absolute',
         top: '24px', 
@@ -60,7 +60,7 @@ export default function EventsPage() {
         </svg>
       </Link>
 
-      {/* Header Section - REMIS AU PADDING D'ORIGINE */}
+      {/* Header Section */}
       <section style={{
         padding: '3rem 2rem 2rem', textAlign: 'center',
         position: 'relative', overflow: 'hidden',
@@ -109,7 +109,7 @@ export default function EventsPage() {
         </div>
       </section>
 
-      {/* Grid Section - COMPLÈTEMENT RESTAURÉE À L'ÉTAT INITIAL */}
+      {/* Grid Section */}
       <section style={{ padding: '3rem 2rem' }}>
         {loading ? (
           <div style={{ textAlign: 'center', padding: '5rem 0' }}>

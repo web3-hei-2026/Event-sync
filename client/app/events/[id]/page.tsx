@@ -78,7 +78,7 @@ export default async function EventPage({ params }: Props) {
               </p>
             )}
 
-            {/* Infos avec icônes Lucide au lieu des émojis */}
+            {/* Infos avec icônes*/}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem', fontSize: 13, color: '#03CCFF', fontWeight: 500 }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                  <Calendar size={16} style={{ color: '#D403E1' }} />

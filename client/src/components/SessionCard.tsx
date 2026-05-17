@@ -4,7 +4,7 @@ import type { SessionSummary } from "../types";
 import { Clock, MapPin, Mic, Star } from "lucide-react";
 import { useState, useEffect } from "react";
 
-// ✅ Clé unifiée — même partout dans le projet
+// Clé unifiée — même partout dans le projet
 const FAV_KEY = 'event-sync-favs';
 
 function fmtTime(iso: string) {
@@ -137,7 +137,6 @@ export default function SessionCard({ session, now }: { session: SessionSummary;
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: '2px' }}>
             <Mic size={14} color="#D403E1" />
             <span style={{ lineHeight: 1.3 }}>
-              {/* ✅ CORRECTION ICI : On descend chercher le fullName dans l'objet imbriqué speaker */}
               {session.speakers.map((s: any) => s.speaker?.fullName || s.fullName).filter(Boolean).join(", ")}
             </span>
           </div>

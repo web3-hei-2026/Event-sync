@@ -2,14 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { Star } from 'lucide-react';
-// On remonte correctement vers le dossier src depuis components/ui
 import { useFavorites } from '../../src/hooks/useFavorites';
 
 export default function FavoriteButton({ sessionId }: { sessionId: string }) {
   const { favorites, toggleFavorite } = useFavorites();
   const [isMounted, setIsMounted] = useState(false);
 
-  // Évite les bugs d'hydratation Next.js en attendant que le composant soit côté client
+// Évite les bugs d'hydratation Next.js
   useEffect(() => {
     setIsMounted(true);
   }, []);
@@ -24,7 +23,7 @@ export default function FavoriteButton({ sessionId }: { sessionId: string }) {
     <button
       onClick={(e) => {
         e.preventDefault();
-        e.stopPropagation(); // Évite de cliquer sur la carte et d'ouvrir les détails par erreur
+        e.stopPropagation(); 
         toggleFavorite(sessionId);
       }}
       className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all duration-200 ${
@@ -36,7 +35,7 @@ export default function FavoriteButton({ sessionId }: { sessionId: string }) {
     >
       <Star 
         size={18} 
-        fill={isFav ? "#eab308" : "none"} // Remplissage jaune d'or si favori
+        fill={isFav ? "#eab308" : "none"} 
         color={isFav ? "#eab308" : "currentColor"} 
       />
       <span className="text-xs font-semibold tracking-wider uppercase">

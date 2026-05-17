@@ -7,6 +7,7 @@ import { ArrowLeft, Clock, MapPin, Users, Mic, MessageSquare } from "lucide-reac
 
 interface Props { params: Promise<{ id: string }> }
 
+// Métadonnées dynamiques
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
     const { id } = await params;
@@ -17,6 +18,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
+// Formatage de l'heure
 function fmtTime(iso: string) {
   return new Date(iso).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 }
@@ -39,9 +41,41 @@ export default async function SessionPage({ params }: Props) {
     );
   }
 
+  // Logique du code couleur dynamique (Calcul du statut) 
+  const now = new Date().getTime();
+  const start = new Date(session.startTime).getTime();
+  const end = new Date(session.endTime).getTime();
+
+  const isLive = session.isLive || (now >= start && now <= end);
+  const isPast = now > end;
+
+  let badgeText = "À venir";
+  let badgeStyle = {
+    background: 'rgba(3, 204, 255, 0.15)', 
+    color: '#03CCFF',
+    border: '1px solid rgba(3, 204, 255, 0.3)'
+  };
+
+  if (isLive) {
+    badgeText = "En direct";
+    badgeStyle = {
+      background: 'rgba(255, 50, 50, 0.15)', 
+      color: '#ff6060',
+      border: '1px solid rgba(255, 50, 50, 0.3)'
+    };
+  } else if (isPast) {
+    badgeText = "Terminée";
+    badgeStyle = {
+      background: 'rgba(34, 197, 94, 0.15)',
+      color: '#4ade80',
+      border: '1px solid rgba(34, 197, 94, 0.3)'
+    };
+  }
+
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a1a', color: '#fff', padding: '2rem' }}>
-      {/* Back Link */}
+      
+      {/* Retour à l'événement */}
       <Link
         href={`/events/${session.eventId}`}
         style={{
@@ -51,17 +85,18 @@ export default async function SessionPage({ params }: Props) {
         }}
       >
         <ArrowLeft size={16} />
-        Retour à l'événement
+        Voir événement
       </Link>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', maxWidth: 1000, margin: '0 auto' }}>
-        {/* Header Section */}
+        
+        {/* Section En-tête de la Session */}
         <div style={{ 
           position: 'relative', padding: '2.5rem', borderRadius: 20, 
           background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(3,204,255,0.1)',
           overflow: 'hidden'
         }}>
-          {/* Orbs */}
+          {/* Background Glows */}
           <div style={{ position: 'absolute', width: 200, height: 200, background: '#D403E1', borderRadius: '50%', filter: 'blur(100px)', opacity: 0.1, top: -50, right: -50 }} />
           <div style={{ position: 'absolute', width: 150, height: 150, background: '#03CCFF', borderRadius: '50%', filter: 'blur(80px)', opacity: 0.1, bottom: -40, left: -40 }} />
 
@@ -71,25 +106,19 @@ export default async function SessionPage({ params }: Props) {
                 <h1 style={{ fontFamily: 'var(--font-title)', fontSize: 32, fontWeight: 700, margin: 0 }}>
                   {session.title}
                 </h1>
-                {session.isLive ? (
-                  <span style={{ 
-                    display: 'flex', alignItems: 'center', gap: 6, 
-                    fontSize: 11, fontWeight: 600, padding: '4px 12px', borderRadius: 12,
-                    background: 'rgba(255,50,50,0.15)', color: '#ff6060', border: '1px solid rgba(255,50,50,0.3)',
-                    textTransform: 'uppercase', letterSpacing: '0.02em'
-                  }}>
+                
+                {/* Badge d'état avec couleur dynamique */}
+                <span style={{ 
+                  display: 'inline-flex', alignItems: 'center', gap: 6, 
+                  fontSize: 11, fontWeight: 600, padding: '4px 12px', borderRadius: 12,
+                  textTransform: 'uppercase', letterSpacing: '0.02em',
+                  ...badgeStyle
+                }}>
+                  {isLive && (
                     <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#ff4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />
-                    En direct
-                  </span>
-                ) : (
-                  <span style={{ 
-                    fontSize: 11, fontWeight: 600, padding: '4px 12px', borderRadius: 12,
-                    background: 'rgba(100,100,100,0.15)', color: '#888', border: '1px solid rgba(100,100,100,0.3)',
-                    textTransform: 'uppercase'
-                  }}>
-                    {Date.now() < new Date(session.startTime).getTime() ? "À venir" : "Terminée"}
-                  </span>
-                )}
+                  )}
+                  {badgeText}
+                </span>
               </div>
               <SessionFavoriteButton sessionId={session.id} />
             </div>
@@ -100,6 +129,7 @@ export default async function SessionPage({ params }: Props) {
               </p>
             )}
 
+            {/* Informations de la session */}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', fontSize: 13, color: '#8888aa' }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <Clock size={16} color="#03CCFF" />
@@ -127,7 +157,7 @@ export default async function SessionPage({ params }: Props) {
           </div>
         </div>
 
-        {/* Q&A Section */}
+        {/* Section Q&A */}
         <div style={{ 
           background: 'rgba(255,255,255,0.01)', borderRadius: 20, 
           padding: '2rem', border: '1px solid rgba(255,255,255,0.03)' 

@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Star } from 'lucide-react';
 
+{/*Clé unififé pour dans tous le projet*/}
 const FAV_KEY = 'event-sync-favs';
 
 export default function SessionFavoriteButton({ sessionId }: { sessionId: string }) {
@@ -37,7 +38,6 @@ export default function SessionFavoriteButton({ sessionId }: { sessionId: string
       : [...favs, sessionId];
     localStorage.setItem(FAV_KEY, JSON.stringify(newFavs));
     setIsFav(!isFav);
-    // ✅ Prévient la page favoris que ça a changé
     window.dispatchEvent(new Event('favorites-updated'));
   };
 
@@ -50,7 +50,7 @@ export default function SessionFavoriteButton({ sessionId }: { sessionId: string
       style={{
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: '8px', borderRadius: '8px',
-        // ✅ Changé pour un fond jaune d'or transparent si favori
+        //{*/Changé pour un fond jaune d'or transparent si favori*/}
         background: isFav ? 'rgba(255, 215, 0, 0.15)' : 'rgba(255, 255, 255, 0.05)',
         border: `1px solid ${isFav ? '#FFD700' : 'rgba(255, 255, 255, 0.1)'}`,
         cursor: 'pointer', transition: 'all 0.2s', width: 36, height: 36
@@ -66,7 +66,6 @@ export default function SessionFavoriteButton({ sessionId }: { sessionId: string
           : 'rgba(255, 255, 255, 0.05)';
       }}
     >
-      {/* ✅ Remplissage et bordure de l'étoile changés en Jaune d'or (#FFD700) */}
       <Star size={18} fill={isFav ? "#FFD700" : "none"} color={isFav ? "#FFD700" : "#8888aa"} />
     </button>
   );

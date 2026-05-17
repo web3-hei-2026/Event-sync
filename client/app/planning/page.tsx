@@ -4,7 +4,7 @@ import { getEvents, getEvent } from '@/lib/api';
 import Link from 'next/link';
 import { Star, MapPin, User, Clock } from 'lucide-react';
 
-// ─── Live Badge ───────────────────────────────────────────────────────────────
+// Live Badge
 function LiveBadge() {
   return (
     <span className="flex items-center gap-1 bg-[#D403E1]/20 text-[#D403E1] text-[9px] font-bold px-2 py-0.5 rounded-full border border-[#D403E1]/40 animate-pulse">
@@ -14,7 +14,7 @@ function LiveBadge() {
   );
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+//  Helpers 
 const fmtDay   = (iso: string) => new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit' });
 const fmtMonth = (iso: string) => new Date(iso).toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '');
 const fmtTime  = (iso: string) => new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
@@ -24,7 +24,7 @@ const isSessionLive = (start: string, end: string) => {
   return now >= new Date(start) && now <= new Date(end);
 };
 
-// ✅ Clé unifiée — même dans SessionCard, SessionFavoriteButton et favorites/page.tsx
+// Clé unifiée pour tous le projet
 const FAV_KEY = 'event-sync-favs';
 
 function getFavs(): string[] {
