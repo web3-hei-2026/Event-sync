@@ -22,6 +22,12 @@ function fmt(iso: string) {
   });
 }
 
+function fmtDayHeader(isoString: string) {
+  return new Date(isoString).toLocaleDateString("fr-FR", {
+    weekday: "long", day: "numeric", month: "long"
+  });
+}
+
 export default async function EventPage({ params }: Props) {
   const { id } = await params;
   const now = Date.now();
@@ -41,9 +47,22 @@ export default async function EventPage({ params }: Props) {
     );
   }
 
+  // Regroupement des sessions par date
+  const groupedSessions: Record<string, any[]> = {};
+
+  (event.sessions ?? []).forEach((session: any) => {
+    const dateKey = new Date(session.startTime).toISOString().split('T')[0];
+    if (!groupedSessions[dateKey]) {
+      groupedSessions[dateKey] = [];
+    }
+    groupedSessions[dateKey].push(session);
+  });
+
+  // Tri chronologique des journées
+  const sortedDays = Object.keys(groupedSessions).sort((a, b) => a.localeCompare(b));
+
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a1a', color: '#fff', padding: '2rem' }}>
-      {/* Back link avec icône Chevron */}
       <Link
         href="/events"
         style={{
@@ -63,7 +82,6 @@ export default async function EventPage({ params }: Props) {
           background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)',
           overflow: 'hidden'
         }}>
-          {/* Orbs décoratives */}
           <div style={{ position: 'absolute', width: 150, height: 150, background: '#D403E1', borderRadius: '50%', filter: 'blur(80px)', opacity: 0.08, top: -40, left: -40 }} />
           <div style={{ position: 'absolute', width: 150, height: 150, background: '#03CCFF', borderRadius: '50%', filter: 'blur(80px)', opacity: 0.08, bottom: -40, right: -40 }} />
 
@@ -78,7 +96,6 @@ export default async function EventPage({ params }: Props) {
               </p>
             )}
 
-            {/* Infos avec icônes*/}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem', fontSize: 13, color: '#03CCFF', fontWeight: 500 }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                  <Calendar size={16} style={{ color: '#D403E1' }} />
@@ -95,26 +112,70 @@ export default async function EventPage({ params }: Props) {
           </div>
         </div>
 
-        {/* Sessions Section */}
+        {/* Liste des sessions par jour */}
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: '1.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: '2rem' }}>
             <h2 style={{ fontFamily: 'var(--font-title)', fontSize: 20, fontWeight: 700 }}>
               Sessions 
             </h2>
             <span style={{ fontSize: 12, fontWeight: 'bold', background: 'rgba(212,3,225,0.1)', color: '#D403E1', padding: '2px 10px', borderRadius: 10 }}>
-              {event.sessions.length}
+              {event.sessions?.length || 0}
             </span>
           </div>
           
-          {event.sessions.length === 0 ? (
+          {event.sessions?.length === 0 ? (
             <div style={{ padding: '3rem', textAlign: 'center', background: 'rgba(255,255,255,0.01)', borderRadius: 24, border: '1px dashed rgba(255,255,255,0.1)' }}>
               <p style={{ color: '#6666aa', fontSize: 14 }}>Aucune session planifiée pour cet événement.</p>
             </div>
           ) : (
-            <div style={{ display: 'grid', gap: '1.5rem', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))' }}>
-              {event.sessions.map((session: any) => (
-                <SessionCard key={session.id} session={session} now={now} />
-              ))}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
+              {sortedDays.map((dayKey) => {
+                const sessionsOfDay = groupedSessions[dayKey];
+                
+                return (
+                  <div key={dayKey} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    
+                    {/* En-tête du groupe de jour */}
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '12px', 
+                      borderBottom: '1px solid rgba(255,255,255,0.05)', 
+                      paddingBottom: '8px'
+                    }}>
+                      <span style={{ 
+                        textTransform: 'capitalize', 
+                        fontSize: '15px', 
+                        fontWeight: '700', 
+                        color: '#D403E1',
+                        letterSpacing: '0.05em'
+                      }}>
+                        {fmtDayHeader(sessionsOfDay[0].startTime)}
+                      </span>
+                      <span style={{ 
+                        fontSize: '11px', 
+                        color: '#8888aa', 
+                        background: 'rgba(255,255,255,0.05)', 
+                        padding: '2px 8px', 
+                        borderRadius: '8px' 
+                      }}>
+                        {sessionsOfDay.length} {sessionsOfDay.length > 1 ? 'sessions' : 'session'}
+                      </span>
+                    </div>
+
+                    <div style={{ 
+                      display: 'grid', 
+                      gap: '1.5rem', 
+                      gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))' 
+                    }}>
+                      {sessionsOfDay.map((session: any) => (
+                        <SessionCard key={session.id} session={session} now={now} />
+                      ))}
+                    </div>
+
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
