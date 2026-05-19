@@ -1,24 +1,50 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { getEvents, getSpeakers } from '@/lib/api';
+import { getEvents, getSpeakers, getSpeakerSessions } from '@/lib/api';
 import EventCard from '@/components/ui/EventCard';
 import SpeakerCard from '@/components/ui/SpeakerCard';
+import SpeakerModal from '@/components/ui/SpeakerModal';
 
 export default function HomePage() {
   const [events, setEvents] = useState<any[]>([]);
   const [speakers, setSpeakers] = useState<any[]>([]);
+  const [speakerSessions, setSpeakerSessions] = useState<any[]>([]);
+  const [selectedSpeaker, setSelectedSpeaker] = useState(null);
   const [search, setSearch] = useState('');
 
   useEffect(() => {
     getEvents().then(setEvents).catch(() => setEvents([]));
     getSpeakers().then(setSpeakers).catch(() => setSpeakers([]));
+    getSpeakerSessions().then(setSpeakerSessions).catch(() => setSpeakerSessions([]));
   }, []);
 
   const filtered = events.filter((e) =>
     e.title.toLowerCase().includes(search.toLowerCase()) ||
     e.location?.toLowerCase().includes(search.toLowerCase())
   );
+
+  // const [selectedSpeaker, setSelectedSpeaker, setSpeakerSessions] = useState(null);
+const [open, setOpen] = useState(false);
+
+// const openModal = (speaker:any) => {
+//     setSelectedSpeaker(speaker);
+//     setOpen(true);
+// };
+
+const openModal = async (speaker:any) => {
+    setSelectedSpeaker(speaker);
+    try {
+        const sessions =
+            await getSpeakerSessions(
+                speaker.id.toString()
+            );
+        setSpeakerSessions(sessions);
+    } catch(error){
+        console.error(error);
+    }
+    setOpen(true);
+};
 
   return (
     <>
@@ -136,9 +162,23 @@ export default function HomePage() {
           </Link>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem' }}>
-          {speakers.slice(0, 4).map((speaker, i) => (
+          {/* {speakers.slice(0, 4).map((speaker, i) => (
             <SpeakerCard key={speaker.id} speaker={speaker} index={i} />
+          ))} */}
+          {speakers.map((speaker,index) => (
+            <SpeakerCard
+                key={speaker.id}
+                speaker={speaker}
+                index={index}
+                onOpen={openModal}
+            />
           ))}
+          <SpeakerModal
+              speaker={selectedSpeaker}
+              isOpen={open}
+              onClose={() => setOpen(false)}
+              speakerSessions={speakerSessions}
+          />
         </div>
       </section>
 

@@ -47,6 +47,11 @@ export async function getSpeaker(id: string) {
   if (!res.ok) throw new Error('Failed to fetch speaker');
   return res.json();
 }
+export async function getSpeakerSessions(id: string) {
+  const res = await fetch(`${API_URL}/speakers/${id}/sessions`, {cache: 'no-store'});
+  if (!res.ok) throw new Error("Failed to fetch session speaker");
+  return res.json();  
+}
 
 export async function getSession(id: string) {
   const res = await fetch(`${API_URL}/sessions/${id}`, { cache: 'no-store' });
