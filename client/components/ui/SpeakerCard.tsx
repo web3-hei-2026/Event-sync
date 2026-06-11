@@ -1,5 +1,23 @@
 import Link from 'next/link';
+import {
+  ArrowRight,
+  X,
+  Globe,
+  Calendar,
+  Share2,
+  ExternalLink,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
+interface Speaker {
+  id: number;
+  fullName: string;
+  biography: string;
+  photoUrl: string;
+  linkedin?: string;
+  github?: string;
+  twitter?: string;
+}
 interface SpeakerCardProps {
   speaker: {
     id: string;
@@ -8,6 +26,7 @@ interface SpeakerCardProps {
     photoUrl?: string;
   };
   index?: number;
+  onOpen: (speaker: any) => void;
 }
 
 const gradients = [
@@ -17,16 +36,17 @@ const gradients = [
   'linear-gradient(135deg,#8006C7,#03CCFF)',
 ];
 
-export default function SpeakerCard({ speaker, index = 0 }: SpeakerCardProps) {
+export default function SpeakerCard({ speaker, index = 0 ,  onOpen }: SpeakerCardProps) {
   const initials = speaker.fullName.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase();
 
   return (
-    <Link href={`/speakers/${speaker.id}`} style={{ textDecoration: 'none' }}>
+    // <Link href={`/speakers/${speaker.id}`} style={{ textDecoration: 'none' }}>
       <div style={{
         background: 'var(--color-bg-card)', border: '1px solid var(--color-border)',
         borderRadius: 12, padding: '1.25rem', textAlign: 'center', cursor: 'pointer',
       }}>
-        <div style={{
+        <div 
+         style={{
           width: 60, height: 60, borderRadius: '50%',
           background: gradients[index % gradients.length],
           margin: '0 auto 10px', display: 'flex',
@@ -35,7 +55,7 @@ export default function SpeakerCard({ speaker, index = 0 }: SpeakerCardProps) {
           overflow: 'hidden',
         }}>
           {speaker.photoUrl
-            ? <img src={speaker.photoUrl} alt={speaker.fullName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ? <img src={`http://localhost:5000${speaker.photoUrl}`} alt={speaker.fullName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             : initials
           }
         </div>
@@ -47,8 +67,20 @@ export default function SpeakerCard({ speaker, index = 0 }: SpeakerCardProps) {
             {speaker.biography}
           </div>
         )}
-        <span style={{ fontSize: 11, color: '#09FBFF' }}>Voir le profil →</span>
+        {/* <span style={{ fontSize: 11, color: '#09FBFF' }} >Voir le profil →</span> */}
+        <span
+          onClick={() => onOpen(speaker)}
+          style={{
+            fontSize: 11,
+            color: '#09FBFF',
+            cursor: 'pointer'
+          }}
+        >
+          Voir le profil →
+        </span>
       </div>
-    </Link>
+    // </Link>
+
+
   );
 }

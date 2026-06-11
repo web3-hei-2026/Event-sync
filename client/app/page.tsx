@@ -1,18 +1,22 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { getEvents, getSpeakers } from '@/lib/api';
+import { getEvents, getSpeakers, getSpeakerSessions } from '@/lib/api';
 import EventCard from '@/components/ui/EventCard';
 import SpeakerCard from '@/components/ui/SpeakerCard';
+import SpeakerModal from '@/components/ui/SpeakerModal';
 
 export default function HomePage() {
   const [events, setEvents] = useState<any[]>([]);
   const [speakers, setSpeakers] = useState<any[]>([]);
+  const [speakerSessions, setSpeakerSessions] = useState<any[]>([]);
+  const [selectedSpeaker, setSelectedSpeaker] = useState(null);
   const [search, setSearch] = useState('');
 
   useEffect(() => {
     getEvents().then(setEvents).catch(() => setEvents([]));
     getSpeakers().then(setSpeakers).catch(() => setSpeakers([]));
+    getSpeakerSessions().then(setSpeakerSessions).catch(() => setSpeakerSessions([]));
   }, []);
 
   const filtered = events.filter((e) =>
@@ -20,16 +24,32 @@ export default function HomePage() {
     e.location?.toLowerCase().includes(search.toLowerCase())
   );
 
+  // const [selectedSpeaker, setSelectedSpeaker, setSpeakerSessions] = useState(null);
+const [open, setOpen] = useState(false);
+
+// const openModal = (speaker:any) => {
+//     setSelectedSpeaker(speaker);
+//     setOpen(true);
+// };
+
+const openModal = async (speaker:any) => {
+    setSelectedSpeaker(speaker);
+    try {
+        const sessions =
+            await getSpeakerSessions(
+                speaker.id.toString()
+            );
+        setSpeakerSessions(sessions);
+    } catch(error){
+        console.error(error);
+    }
+    setOpen(true);
+};
+
   return (
     <>
       {/* Hero */}
-      <section style={{
-        padding: '4rem 2rem', textAlign: 'center',
-        position: 'relative', overflow: 'hidden',
-        background: '#0a0a1a', minHeight: 320,
-        display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center',
-      }}>
+      <section className="hero-section">
         {/* Grid background */}
         <div style={{
           position: 'absolute', inset: 0,
@@ -42,7 +62,7 @@ export default function HomePage() {
         <div style={{ position: 'absolute', width: 250, height: 250, background: '#03CCFF', borderRadius: '50%', filter: 'blur(80px)', opacity: 0.12, bottom: -60, right: -40 }} />
         <div style={{ position: 'absolute', width: 180, height: 180, background: '#460071', borderRadius: '50%', filter: 'blur(60px)', opacity: 0.15, top: '40%', left: '40%' }} />
 
-        {/* Constellation SVG */}
+        {/* Constellation */}
         <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.08 }} viewBox="0 0 800 400" preserveAspectRatio="xMidYMid slice">
           <circle cx="100" cy="80" r="3" fill="#09FBFF"/>
           <circle cx="200" cy="40" r="2" fill="#D403E1"/>
@@ -66,18 +86,18 @@ export default function HomePage() {
         <span style={{ position: 'relative', zIndex: 1, display: 'inline-block', background: 'rgba(9,251,255,0.08)', border: '1px solid rgba(9,251,255,0.25)', color: '#09FBFF', fontSize: 11, padding: '4px 14px', borderRadius: 20, marginBottom: '1rem', letterSpacing: '0.05em' }}>
           ✦ Plateforme événementielle en temps réel
         </span>
-        <h1 style={{ position: 'relative', zIndex: 1, fontFamily: 'var(--font-title)', fontSize: 38, fontWeight: 700, lineHeight: 1.2, marginBottom: '1rem' }}>
+        <h1 className="hero-title">
           Discover & Promote<br />
           <span style={{ background: 'linear-gradient(135deg,#D403E1,#03CCFF)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
             Upcoming Events
           </span>
         </h1>
-        <p style={{ position: 'relative', zIndex: 1, fontSize: 14, color: '#8888aa', maxWidth: 440, margin: '0 auto 1.5rem', lineHeight: 1.7 }}>
+        <p className="hero-desc">
           EventSync transforme vos conférences en expériences interactives. Planning dynamique, Q&A en direct.
         </p>
 
         {/* Search */}
-        <div style={{ position: 'relative', zIndex: 1, display: 'flex', maxWidth: 440, width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(9,251,255,0.2)', borderRadius: 30, overflow: 'hidden', padding: '4px 4px 4px 16px' }}>
+        <div className="search-bar">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5a5a7a" strokeWidth="2" style={{ flexShrink: 0, marginRight: 8, alignSelf: 'center' }}>
             <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
           </svg>
@@ -113,10 +133,10 @@ export default function HomePage() {
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#6666aa" strokeWidth="1.5" style={{ marginBottom: 12 }}>
               <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
             </svg>
-            <p style={{ fontSize: 14 }}>Aucun événement trouvé pour "{search}"</p>
+            <p style={{ fontSize: 14 }}>Aucun événement trouvé{search ? ` pour "${search}"` : ''}</p>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
+          <div className="events-grid">
             {filtered.slice(0, 6).map((event, i) => (
               <EventCard key={event.id} event={event} index={i} />
             ))}
@@ -136,9 +156,23 @@ export default function HomePage() {
           </Link>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem' }}>
-          {speakers.slice(0, 4).map((speaker, i) => (
+          {/* {speakers.slice(0, 4).map((speaker, i) => (
             <SpeakerCard key={speaker.id} speaker={speaker} index={i} />
+          ))} */}
+          {speakers.map((speaker,index) => (
+            <SpeakerCard
+                key={speaker.id}
+                speaker={speaker}
+                index={index}
+                onOpen={openModal}
+            />
           ))}
+          <SpeakerModal
+              speaker={selectedSpeaker}
+              isOpen={open}
+              onClose={() => setOpen(false)}
+              speakerSessions={speakerSessions}
+          />
         </div>
       </section>
 
@@ -146,6 +180,104 @@ export default function HomePage() {
         @keyframes pulse {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.3; }
+        }
+
+        .hero-section {
+          padding: 4rem 2rem;
+          text-align: center;
+          position: relative;
+          overflow: hidden;
+          background: #0a0a1a;
+          min-height: 320px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .hero-title {
+          position: relative;
+          z-index: 1;
+          font-family: var(--font-title);
+          font-size: 38px;
+          font-weight: 700;
+          line-height: 1.2;
+          margin-bottom: 1rem;
+        }
+
+        .hero-desc {
+          position: relative;
+          z-index: 1;
+          font-size: 14px;
+          color: #8888aa;
+          max-width: 440px;
+          margin: 0 auto 1.5rem;
+          line-height: 1.7;
+        }
+
+        .search-bar {
+          position: relative;
+          z-index: 1;
+          display: flex;
+          width: 100%;
+          max-width: 440px;
+          background: rgba(255,255,255,0.05);
+          border: 1px solid rgba(9,251,255,0.2);
+          border-radius: 30px;
+          overflow: hidden;
+          padding: 4px 4px 4px 16px;
+        }
+
+        .events-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 1rem;
+        }
+
+        .speakers-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 1rem;
+        }
+
+        @media (max-width: 1024px) {
+          .events-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+          .speakers-grid {
+            grid-template-columns: repeat(3, 1fr);
+          }
+        }
+
+        @media (max-width: 768px) {
+          .hero-section {
+            padding: 3rem 1.25rem;
+            min-height: 280px;
+          }
+          .hero-title {
+            font-size: 26px;
+          }
+          .hero-desc {
+            font-size: 13px;
+          }
+          .search-bar {
+            max-width: 100%;
+          }
+          .events-grid {
+            grid-template-columns: 1fr;
+          }
+          .speakers-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+        }
+
+        @media (max-width: 480px) {
+          .hero-title {
+            font-size: 22px;
+          }
+          .speakers-grid {
+            grid-template-columns: 1fr 1fr;
+          }
         }
       `}</style>
     </>
