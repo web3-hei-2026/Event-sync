@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { getSession } from '@/lib/api';
 import { Star, X, MapPin, Mic, Clock } from 'lucide-react';
 
-{/*type*/}
+// ─── Types ────────────────────────────────────────────────────────────────────
 interface Session {
   id: string;
   title: string;
@@ -14,7 +14,7 @@ interface Session {
   speakers?: { speaker: { fullName: string } }[];
 }
 
-{/*helper*/}
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 const FAV_KEY = 'event-sync-favs';
 
 const fmtTime = (iso: string) =>
@@ -28,6 +28,42 @@ const isCurrentlyLive = (start: string, end: string) => {
   return now >= new Date(start) && now <= new Date(end);
 };
 
+function getStatus(start: string, end: string): 'live' | 'upcoming' | 'past' {
+  const now = new Date();
+  if (now >= new Date(start) && now <= new Date(end)) return 'live';
+  if (now < new Date(start)) return 'upcoming';
+  return 'past';
+}
+
+function StatusBadge({ startTime, endTime }: { startTime: string; endTime: string }) {
+  const now = new Date().getTime();
+  const start = new Date(startTime).getTime();
+  const end = new Date(endTime).getTime();
+
+  if (now >= start && now <= end) {
+    return (
+      <span className="flex items-center gap-1 bg-red-500/10 text-red-400 text-[10px] font-bold px-2.5 py-1 rounded-lg border border-red-500/20 uppercase tracking-wider animate-pulse">
+        <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+        Live
+      </span>
+    );
+  }
+
+  if (now > end) {
+    return (
+      <span className="flex items-center bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-lg border border-emerald-500/20 uppercase tracking-wider">
+        Terminée
+      </span>
+    );
+  }
+
+  return (
+    <span className="flex items-center bg-[#03CCFF]/10 text-[#03CCFF] text-[10px] font-bold px-2.5 py-1 rounded-lg border border-[#03CCFF]/20 uppercase tracking-wider">
+      À venir
+    </span>
+  );
+}
+
 export default function FavoritesPage() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,13 +71,13 @@ export default function FavoritesPage() {
 
   async function loadData() {
     const stored = localStorage.getItem(FAV_KEY);
-    
-    const ids: string[] = stored 
+
+    const ids: string[] = stored
       ? JSON.parse(stored)
           .map((id: any) => id ? String(id) : '')
           .filter((id: string) => id !== '' && id !== 'null')
       : [];
-      
+
     setFavIds(ids);
 
     if (ids.length === 0) {
@@ -63,25 +99,32 @@ export default function FavoritesPage() {
       const results = await Promise.all(requests);
       const validSessions = results.filter((s): s is Session => s !== null);
 
-      validSessions.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+      const now = new Date();
+      validSessions.sort((a, b) => {
+        const statusScore = (s: Session) => {
+          const start = new Date(s.startTime);
+          const end = new Date(s.endTime);
+          if (now >= start && now <= end) return 0;
+          if (now < start) return 1;
+          return 2;
+        };
+        const diff = statusScore(a) - statusScore(b);
+        if (diff !== 0) return diff;
+        return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
+      });
+
       setSessions(validSessions);
     } catch (err) {
       console.error('Erreur globale lors du chargement des favoris', err);
     } finally {
-      wlLoading(false);
+      setLoading(false);
     }
-  }
-
-  function wlLoading(val: boolean) {
-    setLoading(val);
   }
 
   useEffect(() => {
     loadData();
-
     window.addEventListener('favorites-updated', loadData);
     window.addEventListener('storage', loadData);
-
     return () => {
       window.removeEventListener('favorites-updated', loadData);
       window.removeEventListener('storage', loadData);
@@ -94,14 +137,13 @@ export default function FavoritesPage() {
     localStorage.setItem(FAV_KEY, JSON.stringify(updated));
     setFavIds(updated);
     setSessions(prev => prev.filter(s => String(s.id) !== String(id)));
-
     window.dispatchEvent(new Event('favorites-updated'));
   };
 
   return (
     <div className="min-h-screen bg-[#0a0a1a] text-white py-12 px-4 selection:bg-[#03CCFF]/30">
       <main className="max-w-[900px] mx-auto">
-        
+
         <header className="mb-12">
           <h1 className="text-5xl font-bold tracking-tight font-['Poppins'] mb-2">
             Mon <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D403E1] to-[#03CCFF]">Itinéraire</span>
@@ -128,7 +170,6 @@ export default function FavoritesPage() {
           <div className="grid gap-4">
             {sessions.map((session) => {
               const live = isCurrentlyLive(session.startTime, session.endTime);
-              
               const speakerNames = session.speakers
                 ?.map(s => s.speaker?.fullName)
                 .filter(Boolean)
@@ -137,10 +178,13 @@ export default function FavoritesPage() {
               return (
                 <div key={session.id} className="relative group">
                   <Link href={`/sessions/${session.id}`} className={`
-                    flex flex-col md:flex-row md:items-center gap-6 p-6 rounded-[32px] border transition-all duration-300 pr-16
-                    ${live ? 'border-red-500/40 bg-red-500/[0.02] shadow-[0_0_15px_rgba(239,68,68,0.05)]' : 'border-white/5 bg-white/[0.03] hover:bg-white/[0.06] hover:border-white/10'}
+                    flex flex-col md:flex-row md:items-center gap-6 p-6 rounded-[32px] border transition-all duration-300
+                    ${live
+                      ? 'border-red-500/40 bg-red-500/[0.02] shadow-[0_0_15px_rgba(239,68,68,0.05)]'
+                      : 'border-white/5 bg-white/[0.03] hover:bg-white/[0.06] hover:border-white/10'
+                    }
                   `}>
-                    
+
                     {/* Colonne Temps */}
                     <div className="md:w-36 flex-shrink-0">
                       <div className={`text-base font-bold flex items-center gap-1.5 ${live ? 'text-red-400' : 'text-[#03CCFF]'}`}>
@@ -158,38 +202,34 @@ export default function FavoritesPage() {
                         <h3 className="font-bold text-xl group-hover:text-[#03CCFF] transition-colors">
                           {session.title}
                         </h3>
-                        {/* Badge Rouge LIVE clignotant */}
-                        {live && (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-red-500/10 text-red-500 border border-red-500/20 animate-pulse uppercase tracking-wider">
-                            <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                            Live
-                          </span>
-                        )}
                       </div>
 
                       <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-slate-400">
                         <span className="flex items-center gap-2">
-                          <MapPin size={14} className="text-[#03CCFF]" /> 
+                          <MapPin size={14} className="text-[#03CCFF]" />
                           {session.room?.name || 'Salle à définir'}
                         </span>
-
                         {speakerNames && (
                           <span className="flex items-center gap-2 text-[#D403E1] font-medium">
-                             <Mic size={14} /> 
-                             {speakerNames}
+                            <Mic size={14} />
+                            {speakerNames}
                           </span>
                         )}
                       </div>
                     </div>
 
-                    {/* Action Supprimer */}
-                    <button
-                      onClick={(e) => removeFav(e, session.id)}
-                      className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-full bg-white/5 text-slate-400 transition-all hover:bg-red-500/20 hover:text-red-400 target-button"
-                      title="Retirer de l'itinéraire"
-                    >
-                      <X size={18} />
-                    </button>
+                    {/* ✅ Zone : Badge + Bouton supprimer (alignés à droite) */}
+                    <div className="flex items-center gap-4 absolute right-6 top-1/2 -translate-y-1/2">
+                      <StatusBadge startTime={session.startTime} endTime={session.endTime} />
+                      <button
+                        onClick={(e) => removeFav(e, session.id)}
+                        className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 text-slate-400 transition-all hover:bg-red-500/20 hover:text-red-400"
+                        title="Retirer de l'itinéraire"
+                      >
+                        <X size={18} />
+                      </button>
+                    </div>
+
                   </Link>
                 </div>
               );
