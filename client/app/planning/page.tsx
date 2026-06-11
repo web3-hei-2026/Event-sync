@@ -36,9 +36,9 @@ function StatusBadge({ startTime, endTime }: { startTime: string; endTime: strin
 }
 
 // ─── HELPERS FORMATAGE SÉCURISÉS EN HEURE LOCALE ─────────────────────────────
-const fmtDay      = (iso: string) => new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit' });
-const fmtMonth    = (iso: string) => new Date(iso).toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '');
-const fmtTime     = (iso: string) => new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
+const fmtDay = (iso: string) => new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit' });
+const fmtMonth = (iso: string) => new Date(iso).toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '');
+const fmtTime = (iso: string) => new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
 
 // Calcule la clé YYYY-MM-DD basée sur le jour local de la session (évite le décalage UTC)
 const fmtLocalDate = (iso: string) => {
@@ -66,8 +66,8 @@ function toggleFav(id: string): boolean {
 
 export default function PlanningPage() {
   const [fullEvents, setFullEvents] = useState<any[]>([]);
-  const [loading, setLoading]       = useState(true);
-  const [favs, setFavs]             = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [favs, setFavs] = useState<string[]>([]);
 
   useEffect(() => { setFavs(getFavs()); }, []);
 
@@ -91,20 +91,30 @@ export default function PlanningPage() {
   useEffect(() => {
     async function load() {
       try {
-        const list     = await getEvents();
+        const list = await getEvents();
         const detailed = await Promise.all(list.map((ev: any) => getEvent(ev.id)));
-        setFullEvents(detailed);
-      } catch (err) { console.error(err); }
-      finally { setLoading(false); }
+
+        const sorted = detailed.sort((a: any, b: any) =>
+          new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
+        );
+        setFullEvents(sorted);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
     }
+
     load();
   }, []);
 
-  if (loading) return (
-    <div className="min-h-screen bg-[#0a0a1a] flex items-center justify-center text-white italic font-['Poppins']">
-      Chargement de ton planning...
-    </div>
-  );
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0a0a1a] flex items-center justify-center text-white italic font-['Poppins']">
+        Chargement de ton planning...
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0a0a1a] text-white py-10 px-4 flex flex-col items-center">
@@ -116,7 +126,7 @@ export default function PlanningPage() {
 
       <main className="w-full max-w-[1400px] space-y-16">
         {fullEvents.map((event) => {
-          
+
           const groupedByDay: Record<string, Record<string, any[]>> = {};
 
           (event.sessions ?? []).forEach((s: any) => {
@@ -125,7 +135,7 @@ export default function PlanningPage() {
 
             if (!groupedByDay[dayKey]) groupedByDay[dayKey] = {};
             if (!groupedByDay[dayKey][timeSlot]) groupedByDay[dayKey][timeSlot] = [];
-            
+
             groupedByDay[dayKey][timeSlot].push(s);
           });
 
@@ -133,9 +143,9 @@ export default function PlanningPage() {
 
           return (
             <section key={event.id} className="bg-[#11111d] rounded-[40px] border border-white/5 shadow-2xl overflow-hidden flex flex-col">
-              
+
               {/* ── BANDEAU DE L'ÉVÉNEMENT (Lien direct sans ancre) ── */}
-              <Link 
+              <Link
                 href={`/events/${event.id}`}
                 className="w-full bg-gradient-to-r from-[#D403E1] to-[#460071] p-6 md:p-8 flex flex-col sm:flex-row justify-between sm:items-center gap-4 hover:brightness-110 transition-all duration-300 group/title"
               >
@@ -158,7 +168,7 @@ export default function PlanningPage() {
               <div className="divide-y divide-white/5">
                 {sortedDays.map(([dayIso, timeSlots]) => (
                   <div key={dayIso} className="flex flex-col lg:flex-row items-stretch">
-                    
+
                     {/* Colonne latérale du Jour (Lien dynamique synchronisé en heure locale) */}
                     <Link
                       href={`/events/${event.id}#day-${dayIso}`}
@@ -176,7 +186,7 @@ export default function PlanningPage() {
                     <div className="flex-1 divide-y divide-white/[0.03]">
                       {Object.entries(timeSlots).map(([timeRange, slots]) => (
                         <div key={timeRange} className="flex flex-col md:flex-row items-stretch p-4 gap-4 min-h-[140px]">
-                          
+
                           {/* Pilule Horaire */}
                           <div className="w-full md:w-44 flex-shrink-0 flex items-center md:justify-center">
                             <span className="text-[#03CCFF] font-bold text-xs bg-[#03CCFF]/5 px-4 py-2 rounded-xl border border-[#03CCFF]/10 flex items-center gap-2 whitespace-nowrap">
@@ -220,7 +230,7 @@ export default function PlanningPage() {
                                         <MapPin size={10} className="text-[#D403E1]" />
                                         {s.room?.name || 'SALLE'}
                                       </span>
-                                      
+
                                       <div className="flex items-center gap-1.5 text-[11px] text-slate-400 italic w-full" title={speakersList}>
                                         <User size={10} className="shrink-0 text-white/30" />
                                         <span className="truncate block w-full">
@@ -231,11 +241,10 @@ export default function PlanningPage() {
 
                                     <button
                                       onClick={(e) => handleToggleFav(e, s.id)}
-                                      className={`w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-full border transition-all duration-300 hover:scale-110 ${
-                                        isFav
-                                          ? 'bg-yellow-400/20 border-yellow-400/60 text-[#FACC15]'
-                                          : 'bg-white/5 border-white/10 text-white/20 hover:text-white/60'
-                                      }`}
+                                      className={`w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-full border transition-all duration-300 hover:scale-110 ${isFav
+                                        ? 'bg-yellow-400/20 border-yellow-400/60 text-[#FACC15]'
+                                        : 'bg-white/5 border-white/10 text-white/20 hover:text-white/60'
+                                        }`}
                                     >
                                       <Star
                                         size={14}
@@ -256,7 +265,6 @@ export default function PlanningPage() {
                   </div>
                 ))}
               </div>
-
             </section>
           );
         })}
@@ -264,3 +272,4 @@ export default function PlanningPage() {
     </div>
   );
 }
+
