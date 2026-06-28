@@ -1,10 +1,9 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { getSession } from '@/lib/api';
 import { Star, X, MapPin, Mic, Clock } from 'lucide-react';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
 interface Session {
   id: string;
   title: string;
@@ -14,7 +13,6 @@ interface Session {
   speakers?: { speaker: { fullName: string } }[];
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 const FAV_KEY = 'event-sync-favs';
 
 const fmtTime = (iso: string) =>
@@ -27,13 +25,6 @@ const isCurrentlyLive = (start: string, end: string) => {
   const now = new Date();
   return now >= new Date(start) && now <= new Date(end);
 };
-
-function getStatus(start: string, end: string): 'live' | 'upcoming' | 'past' {
-  const now = new Date();
-  if (now >= new Date(start) && now <= new Date(end)) return 'live';
-  if (now < new Date(start)) return 'upcoming';
-  return 'past';
-}
 
 function StatusBadge({ startTime, endTime }: { startTime: string; endTime: string }) {
   const now = new Date().getTime();
@@ -69,7 +60,9 @@ export default function FavoritesPage() {
   const [loading, setLoading] = useState(true);
   const [favIds, setFavIds] = useState<string[]>([]);
 
-  async function loadData() {
+  // useCallback pour que la référence soit stable et ne re-crée pas
+  // le listener à chaque render (c'était la source de la boucle infinie)
+  const loadData = useCallback(async () => {
     const stored = localStorage.getItem(FAV_KEY);
 
     const ids: string[] = stored
@@ -119,7 +112,7 @@ export default function FavoritesPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []); // dépendances vides — loadData ne change jamais
 
   useEffect(() => {
     loadData();
@@ -129,7 +122,7 @@ export default function FavoritesPage() {
       window.removeEventListener('favorites-updated', loadData);
       window.removeEventListener('storage', loadData);
     };
-  }, []);
+  }, [loadData]);
 
   const removeFav = (e: React.MouseEvent, id: string) => {
     e.preventDefault();
@@ -185,7 +178,6 @@ export default function FavoritesPage() {
                     }
                   `}>
 
-                    {/* Colonne Temps */}
                     <div className="md:w-36 flex-shrink-0">
                       <div className={`text-base font-bold flex items-center gap-1.5 ${live ? 'text-red-400' : 'text-[#03CCFF]'}`}>
                         <Clock size={14} className="opacity-70" />
@@ -196,7 +188,6 @@ export default function FavoritesPage() {
                       </div>
                     </div>
 
-                    {/* Colonne Contenu */}
                     <div className="flex-1">
                       <div className="flex flex-wrap items-center gap-2 mb-1">
                         <h3 className="font-bold text-xl group-hover:text-[#03CCFF] transition-colors">
@@ -218,7 +209,6 @@ export default function FavoritesPage() {
                       </div>
                     </div>
 
-                    {/* ✅ Zone : Badge + Bouton supprimer (alignés à droite) */}
                     <div className="flex items-center gap-4 absolute right-6 top-1/2 -translate-y-1/2">
                       <StatusBadge startTime={session.startTime} endTime={session.endTime} />
                       <button
