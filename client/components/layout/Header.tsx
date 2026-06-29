@@ -52,12 +52,16 @@ export default function Header() {
         </nav>
 
         {/* Desktop Button */}
-        <button className="desktop-btn" style={{
-          background: 'linear-gradient(135deg, #D403E1, #460071)',
-          border: 'none', color: '#fff', padding: '8px 18px',
-          borderRadius: 20, fontSize: 13, fontWeight: 500, cursor: 'pointer',
-          display: 'flex', alignItems: 'center', gap: 6,
-        }}>
+        <button
+          className="desktop-btn"
+          style={{
+            background: 'linear-gradient(135deg, #D403E1, #460071)',
+            border: 'none', color: '#fff', padding: '8px 18px',
+            borderRadius: 20, fontSize: 13, fontWeight: 500, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', gap: 6,
+          }}
+          onClick={() => window.open('http://localhost:3002/#/login', '_blank')}
+        >
           <LogIn size={14} />
           Connexion Admin
         </button>
