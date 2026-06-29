@@ -80,10 +80,10 @@ export default function SpeakerModal({
                       href={url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      style={{ display: 'flex', alignItems: 'center', gap: 5, color: '#09FBFF', textDecoration: 'underline' }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 5, color: '#008ffd', textDecoration: 'underline' }}
                     >
                       <ExternalLink size={14} />
-                      {key}
+                      {url}
                     </Link>
                   ) : null
                 ))}
