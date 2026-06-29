@@ -39,12 +39,6 @@ cd server
 npm install
 ```
 
-Create a `.env` file in `server/`:
-
-```env
-DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/eventsync"
-```
-
 ```bash
 npx prisma migrate dev --name init
 npx prisma generate
@@ -57,12 +51,6 @@ npm run dev
 ```bash
 cd client
 npm install
-```
-
-Create a `.env.local` file in `client/`:
-
-```env
-NEXT_PUBLIC_API_URL=http://localhost:5000/api
 ```
 
 ```bash
