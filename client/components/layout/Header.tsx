@@ -52,15 +52,20 @@ export default function Header() {
         </nav>
 
         {/* Desktop Button */}
-        <button className="desktop-btn" style={{
-          background: 'linear-gradient(135deg, #D403E1, #460071)',
-          border: 'none', color: '#fff', padding: '8px 18px',
-          borderRadius: 20, fontSize: 13, fontWeight: 500, cursor: 'pointer',
-          display: 'flex', alignItems: 'center', gap: 6,
-        }}>
+        <a href="http://localhost:3002/#/login"
+          rel="noopener noreferrer"
+          className="desktop-btn"
+          style={{
+            background: 'linear-gradient(135deg, #D403E1, #460071)',
+            border: 'none', color: '#fff', padding: '8px 18px',
+            borderRadius: 20, fontSize: 13, fontWeight: 500, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', gap: 6,
+            textDecoration: 'none',
+          }}
+        >
           <LogIn size={14} />
           Connexion Admin
-        </button>
+        </a>
 
         {/* Mobile — Icons only nav */}
         <nav className="mobile-nav" style={{ display: 'none', gap: '1rem', alignItems: 'center' }}>
